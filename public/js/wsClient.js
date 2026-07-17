@@ -25,6 +25,7 @@ class WSClient {
     // Lambda no soporta WebSocket — ir directo a polling
     console.log('Modo Lambda: usando HTTP polling.');
     this.startPolling();
+  }
 
   /**
    * Start HTTP polling as fallback when WebSocket is unavailable

@@ -35,6 +35,20 @@ exports.handler = async (event) => {
   const headers = event.headers || {};
   const body = event.body || '';
 
+  // Responder preflight CORS inmediatamente
+  if (httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Max-Age': '86400'
+      },
+      body: ''
+    };
+  }
+
   const url = rawPath + (queryParams ? '?' + new URLSearchParams(queryParams).toString() : '');
 
   return new Promise((resolve) => {
@@ -84,6 +98,10 @@ exports.handler = async (event) => {
             isBase64 = false;
           }
         }
+        // Agregar headers CORS para permitir peticiones desde GitHub Pages
+        responseHeaders['Access-Control-Allow-Origin'] = '*';
+        responseHeaders['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS';
+        responseHeaders['Access-Control-Allow-Headers'] = 'Content-Type, Authorization';
         resolve({
           statusCode,
           headers: responseHeaders,
