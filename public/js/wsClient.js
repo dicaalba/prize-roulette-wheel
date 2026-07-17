@@ -1,7 +1,7 @@
 /**
  * WebSocket Client - Shared connection manager for all frontend pages
- * Implements automatic reconnection with exponential backoff
- * Falls back to HTTP polling if WebSocket is unavailable (e.g., Lambda deployment)
+ * - En localhost: usa WebSocket real (sin polling, actualizaciones instantáneas)
+ * - En producción (Lambda/GitHub Pages): HTTP polling cada 15s
  */
 class WSClient {
   constructor() {
@@ -17,35 +17,63 @@ class WSClient {
     this.shouldReconnect = true;
     this.pollingInterval = null;
     this.pollingMode = false;
-    this.failedAttempts = 0;
-    this.maxFailedAttempts = 3; // Switch to polling after 3 failures
   }
 
   connect() {
-    // Lambda no soporta WebSocket — ir directo a polling
-    console.log('Modo Lambda: usando HTTP polling.');
-    this.startPolling();
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (isLocal) {
+      this._connectWebSocket();
+    } else {
+      this.startPolling();
+    }
   }
 
-  /**
-   * Start HTTP polling as fallback when WebSocket is unavailable
-   */
+  _connectWebSocket() {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+
+    try {
+      this.ws = new WebSocket(wsUrl);
+
+      this.ws.onopen = () => {
+        this.connected = true;
+        this.pollingMode = false;
+        this.reconnectDelay = 1000;
+      };
+
+      this.ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          const handlers = this.handlers[msg.event];
+          if (handlers) handlers.forEach(cb => cb(msg.data));
+        } catch (e) { /* ignorar mensajes malformados */ }
+      };
+
+      this.ws.onclose = () => {
+        this.connected = false;
+        if (this.shouldReconnect) {
+          setTimeout(() => this._connectWebSocket(), this.reconnectDelay);
+          this.reconnectDelay = Math.min(this.reconnectDelay * 2, this.maxReconnectDelay);
+        }
+      };
+
+      this.ws.onerror = () => {
+        // Si WS falla en localhost, caer a polling como respaldo
+        this.ws.close();
+        if (!this.pollingInterval) this.startPolling();
+      };
+    } catch (e) {
+      this.startPolling();
+    }
+  }
+
   startPolling() {
     if (this.pollingInterval) return;
     this.pollingMode = true;
-    console.log('Starting HTTP polling (every 3s)...');
-
-    // Initial fetch
     this._pollPrizes();
-
-    this.pollingInterval = setInterval(() => {
-      this._pollPrizes();
-    }, 3000);
+    this.pollingInterval = setInterval(() => this._pollPrizes(), 15000); // 15s en vez de 3s
   }
 
-  /**
-   * Stop HTTP polling
-   */
   stopPolling() {
     if (this.pollingInterval) {
       clearInterval(this.pollingInterval);
@@ -54,43 +82,27 @@ class WSClient {
     }
   }
 
-  /**
-   * Poll prizes via HTTP
-   */
   async _pollPrizes() {
     try {
       const baseUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_BASE_URL) ? CONFIG.API_BASE_URL : '';
       const response = await fetch(`${baseUrl}/api/prizes`);
       if (response.ok) {
         const data = await response.json();
-        // Notify all stock:updated handlers with fresh data
-        if (this.handlers['stock:updated']) {
-          this.handlers['stock:updated'].forEach(cb => cb(data));
-        }
+        this.handlers['stock:updated'].forEach(cb => cb(data));
       }
     } catch (e) {
       console.error('Polling error:', e);
     }
   }
 
-  onPrizesInitial(callback) {
-    this.handlers['prizes:initial'].push(callback);
-  }
-
-  onPrizesUpdated(callback) {
-    this.handlers['prizes:updated'].push(callback);
-  }
-
-  onStockUpdated(callback) {
-    this.handlers['stock:updated'].push(callback);
-  }
+  onPrizesInitial(callback)  { this.handlers['prizes:initial'].push(callback); }
+  onPrizesUpdated(callback)  { this.handlers['prizes:updated'].push(callback); }
+  onStockUpdated(callback)   { this.handlers['stock:updated'].push(callback); }
 
   disconnect() {
     this.shouldReconnect = false;
     this.stopPolling();
-    if (this.ws) {
-      this.ws.close();
-    }
+    if (this.ws) this.ws.close();
   }
 
   isConnected() {

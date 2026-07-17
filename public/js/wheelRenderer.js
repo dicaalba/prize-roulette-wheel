@@ -40,18 +40,33 @@ class WheelRenderer {
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Draw text
+      // Draw text (clipped to segment, dynamically fitted)
       ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.arc(centerX, centerY, radius - 2, startAngle, endAngle);
+      ctx.closePath();
+      ctx.clip();
+
       ctx.translate(centerX, centerY);
       ctx.rotate(startAngle + segmentAngle / 2);
       ctx.textAlign = 'right';
       ctx.fillStyle = '#fff';
-      ctx.font = `bold ${Math.max(11, Math.min(14, 160 / segments.length))}px Arial`;
+
+      const fontSize = Math.max(10, Math.min(14, 180 / segments.length));
+      ctx.font = `bold ${fontSize}px Arial, sans-serif`;
       ctx.shadowColor = 'rgba(0,0,0,0.5)';
       ctx.shadowBlur = 3;
 
-      const text = segment.name.length > 12 ? segment.name.substring(0, 11) + '…' : segment.name;
-      ctx.fillText(text, radius - 20, 5);
+      const maxTextWidth = radius - 38;
+      let text = segment.name;
+      if (ctx.measureText(text).width > maxTextWidth) {
+        while (text.length > 2 && ctx.measureText(text.trimEnd() + '…').width > maxTextWidth) {
+          text = text.slice(0, -1);
+        }
+        text = text.trimEnd() + '…';
+      }
+      ctx.fillText(text, radius - 16, 5);
       ctx.restore();
     });
 

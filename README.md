@@ -1,120 +1,194 @@
-# 🎰 Ruleta de Premios — AWS Girls Perú
+# Ruleta de Premios — AWS Girls Perú
 
-Aplicación web de ruleta de premios con gestión de stock en tiempo real, desplegada en AWS Lambda + API Gateway con frontend en GitHub Pages.
+Aplicación web de ruleta de premios con gestión de stock en tiempo real, desplegada en AWS Lambda + API Gateway + S3 con frontend en GitHub Pages.
 
 ---
 
-## 🌐 URLs
+## URLs
 
 | Página | URL |
 |---|---|
-| 🎰 Ruleta (público) | https://dicaalba.github.io/prize-roulette-wheel/ |
-| 🔐 Panel Admin | https://dicaalba.github.io/prize-roulette-wheel/admin/ |
-| 📺 Display / Pantalla grande | https://dicaalba.github.io/prize-roulette-wheel/display/ |
-| 🔌 API Backend | https://hkhkh8v50h.execute-api.us-east-1.amazonaws.com |
+| Ruleta (público) | https://dicaalba.github.io/prize-roulette-wheel/ |
+| Panel Admin | https://dicaalba.github.io/prize-roulette-wheel/admin/ |
+| Display / Pantalla grande | https://dicaalba.github.io/prize-roulette-wheel/display/ |
+| API Backend | https://hkhkh8v50h.execute-api.us-east-1.amazonaws.com |
 
 ---
 
-## 🏗️ Arquitectura
+## Arquitectura
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                        USUARIO FINAL                        │
-└──────────────┬──────────────────────────────┬──────────────┘
-               │ HTTPS                        │ HTTPS
-               ▼                              ▼
-┌──────────────────────────┐    ┌─────────────────────────────┐
-│      GitHub Pages        │    │       API Gateway           │
-│  (Frontend Estático)     │───▶│     (HTTP API + CORS)       │
-│                          │    │   Throttle: 20 req/s        │
-│  /             Ruleta    │    └──────────────┬──────────────┘
-│  /admin/       Admin     │                   │ Proxy
-│  /display/     Display   │                   ▼
-└──────────────────────────┘    ┌─────────────────────────────┐
-                                │       AWS Lambda            │
-                                │    (Node.js 20, 128MB)      │
-                                │    Timeout: 10s             │
-                                │    Arquitectura: x86_64     │
-                                └──────────────┬──────────────┘
-                                               │ Lee/Escribe
-                                               ▼
-                                ┌─────────────────────────────┐
-                                │   /tmp/roulette.json        │
-                                │  (Efímero por contenedor)   │
-                                └─────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│                         PARTICIPANTES                            │
+│               (escanean QR → GitHub Pages)                       │
+└────────────────────────┬─────────────────────────────────────────┘
+                         │ HTTPS
+                         ▼
+┌────────────────────────────────────┐
+│           GitHub Pages             │
+│       (Frontend Estático)          │
+│                                    │
+│  /            Ruleta               │
+│  /admin/      Panel Admin          │──── polling HTTP /15s ────┐
+│  /display/    Display evento       │                           │
+└────────────────────────────────────┘                           │
+                                                                  ▼
+                                              ┌───────────────────────────────┐
+                                              │        API Gateway            │
+                                              │    (HTTP API + CORS)          │
+                                              │   Throttle: 20 req/s          │
+                                              └───────────────┬───────────────┘
+                                                              │ Proxy
+                                                              ▼
+                                              ┌───────────────────────────────┐
+                                              │         AWS Lambda            │
+                                              │     (Node.js 20, 128MB)       │
+                                              │     Timeout: 10s              │
+                                              └───────────────┬───────────────┘
+                                                              │ Lee/Escribe
+                                                              ▼
+                                              ┌───────────────────────────────┐
+                                              │  S3: prize-roulette-data-     │
+                                              │      703216893961             │
+                                              │  Archivo: roulette.json       │
+                                              │  (Persistencia permanente)    │
+                                              └───────────────────────────────┘
 
-┌─────────────────────────────────────────────────────────────┐
-│                          AWS ECR                            │
-│           Imagen Docker (linux/amd64, ~120MB)               │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│                       ORGANIZADORAS (evento)                     │
+│              Laptop conectada al proyector                       │
+└──────────┬────────────────────────────┬─────────────────────────┘
+           │                            │
+           ▼                            ▼
+┌─────────────────────┐      ┌─────────────────────────┐
+│  localhost:3000/    │      │  localhost:3000/display/ │
+│  admin/             │      │  (Pantalla TV/Proyector)  │
+│  (Panel Admin)      │      │                          │
+└──────────┬──────────┘      └──────────┬───────────────┘
+           │  WebSocket (ws://)          │  WebSocket (ws://)
+           └──────────┬──────────────────┘
+                      ▼
+           ┌─────────────────────┐
+           │  localhost:3000     │
+           │  (Servidor Node.js) │
+           │  + WebSocket real   │
+           └──────────┬──────────┘
+                      │ Lee/Escribe
+                      ▼
+           ┌─────────────────────┐
+           │  data/roulette.json │
+           │  (Local, persiste   │
+           │   mientras corre)   │
+           └─────────────────────┘
 ```
 
-> ⚠️ **Nota sobre persistencia**: Los datos se almacenan en `/tmp` dentro de Lambda. Son efímeros — se resetean cuando el contenedor se recicla. Para un evento de pocas horas esto es suficiente. Para persistencia entre eventos, conectar DynamoDB o S3.
+**Dos modos de operación:**
+
+| Modo | Cuándo | Sincronización | Persistencia |
+|---|---|---|---|
+| **Localhost** | Desarrollo / evento en laptop | WebSocket real (instantáneo) | `data/roulette.json` local |
+| **Producción** | GitHub Pages + Lambda | HTTP polling cada 15s | S3 `prize-roulette-data-703216893961` |
+
+> En localhost el admin y el display se sincronizan por WebSocket sin hacer ninguna llamada a AWS. Los participantes en GitHub Pages consultan Lambda, que persiste en S3.
 
 ---
 
-## 🧩 Componentes
+## Componentes
 
 ### Frontend (GitHub Pages)
 | Archivo | Descripción |
 |---|---|
 | `public/index.html` | Ruleta principal — los participantes giran aquí |
 | `public/admin/` | Panel de administración — gestión de premios y stock |
-| `public/display/` | Pantalla grande para el evento — muestra premios disponibles e info de la comunidad |
-| `public/js/config.js` | **URL del backend** — actualizar si cambia la API |
-| `public/js/wsClient.js` | Cliente HTTP polling (reemplaza WebSocket, incompatible con Lambda) |
+| `public/display/` | Pantalla grande para el evento — premios e info de comunidad |
+| `public/js/config.js` | URL del backend — automático: vacío en localhost, AWS en producción |
+| `public/js/wsClient.js` | WebSocket en localhost / polling cada 15s en producción |
 
 ### Backend (AWS Lambda)
 | Archivo | Descripción |
 |---|---|
-| `lambda.js` | Handler principal de Lambda — adapta HTTP ↔ Lambda |
+| `lambda.js` | Handler principal de Lambda |
+| `src/server.js` | Servidor local con WebSocket real |
 | `src/server-handler.js` | Router de rutas API y archivos estáticos |
 | `src/routes/prizes.js` | CRUD de premios, login, spin, config |
-| `src/db/database.js` | Persistencia JSON en `/tmp` |
+| `src/db/database.js` | Persistencia JSON — local en `/data/`, S3 en Lambda |
 | `src/services/spinService.js` | Lógica del giro — selección aleatoria ponderada |
 
 ### Infraestructura AWS
-| Recurso | Configuración |
+| Recurso | Nombre / Config |
 |---|---|
-| ECR Repository | `prize-roulette-wheel` — imagen Docker |
+| S3 Bucket | `prize-roulette-data-703216893961` |
+| ECR Repository | `prize-roulette-wheel` |
 | Lambda Function | 128MB, 10s timeout, x86_64, Node.js 20 |
-| API Gateway HTTP API | CORS `*`, throttle 20 req/s, burst 50 |
-| IAM Role | `prize-roulette-lambda-role` — solo logs básicos |
+| API Gateway | HTTP API, CORS `*`, throttle 20 req/s, burst 50 |
+| IAM Role | `prize-roulette-lambda-role` |
 
 ---
 
-## 💰 Tabla de Costos
+## Costos AWS
 
 ### Estimado para un evento de 4 horas (~500 participantes)
 
+Con polling reducido a 15s y admin/display usando WebSocket local:
+
 | Servicio | Precio | Uso estimado | Costo |
 |---|---|---|---|
-| **Lambda** | $0.20/millón invocaciones | ~2,000 invocaciones | **$0.00** (free tier) |
-| **Lambda** (cómputo) | $0.0000166667/GB-segundo | 2,000 × 0.128GB × 0.5s | **$0.00** (free tier) |
-| **API Gateway HTTP** | $1.00/millón requests | ~2,000 requests | **$0.00** (free tier) |
+| **Lambda** invocaciones | $0.20/millón | ~7,000 (spins + polls) | **$0.00** (free tier) |
+| **Lambda** cómputo | $0.0000166667/GB-s | 7,000 × 0.128GB × 0.3s | **$0.00** (free tier) |
+| **API Gateway HTTP** | $1.00/millón requests | ~7,000 requests | **$0.00** (free tier) |
+| **S3** almacenamiento | $0.023/GB-mes | ~10KB JSON | **$0.00** |
+| **S3** operaciones PUT | $0.005/1,000 | ~100 writes (admin CRUD) | **$0.00** |
+| **S3** operaciones GET | $0.0004/1,000 | ~50 reads (cold starts) | **$0.00** |
 | **ECR** | $0.10/GB-mes | ~0.12 GB imagen | **~$0.01** |
-| **CloudWatch Logs** | $0.50/GB ingestado | <1 MB logs | **$0.00** |
+| **CloudWatch Logs** | $0.50/GB ingestado | <1 MB | **$0.00** |
 | **GitHub Pages** | Gratuito | — | **$0.00** |
 | **TOTAL** | | | **~$0.01** |
 
-> **Free tier mensual**: Lambda incluye 1M invocaciones y 400,000 GB-segundo gratis. API Gateway HTTP incluye 1M requests gratis durante los primeros 12 meses.
+> **Free tier mensual:** Lambda — 1M invocaciones y 400,000 GB-segundo gratis. API Gateway HTTP — 1M requests gratis los primeros 12 meses. S3 — 5GB almacenamiento, 20,000 GETs y 2,000 PUTs gratis.
+
+### Desglose de llamadas API (antes vs después)
+
+| Fuente | Antes (polling 3s) | Después (WS/15s) | Reducción |
+|---|---|---|---|
+| Admin (localhost) | 1,200/hora | **0** (WebSocket) | **100%** |
+| Display (localhost) | 1,200/hora | **0** (WebSocket) | **100%** |
+| Participantes (GitHub Pages) | 1,200/hora c/u | 240/hora c/u | **80%** |
+| **Total evento 4h** | ~10,000+ | ~7,000 | **~30% menos** |
 
 ### Comparativa de opciones de deploy
-| Opción | Costo/mes (uso bajo) | WebSocket | Persistencia |
+
+| Opción | Costo/mes | WebSocket | Persistencia |
 |---|---|---|---|
-| Lambda + API Gateway ✅ | ~$0 | ❌ (polling) | Efímera (/tmp) |
-| ECS Fargate | ~$15–30 | ✅ | Efímera |
-| EC2 t3.micro | ~$8 | ✅ | Persistente |
-| Lambda + DynamoDB | ~$0–1 | ❌ (polling) | Persistente |
+| **Lambda + API Gateway + S3** ✅ | ~$0.01 | WS en local / polling en prod | Permanente (S3) |
+| Lambda + API Gateway (sin S3) | ~$0.01 | WS en local / polling en prod | Efímera (/tmp) |
+| ECS Fargate | ~$15–30 | Sí | Efímera (necesita EFS/RDS) |
+| EC2 t3.micro | ~$8 | Sí | Persistente |
+| Lambda + DynamoDB | ~$0–1 | Polling | Permanente |
 
 ---
 
-## 🚀 Despliegue
+## Despliegue
 
 ### Prerrequisitos
 - AWS CLI configurado con credenciales activas
 - Docker Desktop corriendo
-- Credenciales con permisos: ECR, Lambda, IAM, API Gateway
+- Permisos: ECR, Lambda, IAM, API Gateway, S3
+
+### Configurar S3 para persistencia (obligatorio para producción)
+
+El Lambda necesita la variable de entorno `S3_BUCKET` para guardar los cambios de premios permanentemente. Sin esto, los datos se pierden cuando el container Lambda se recicla (~15 min de inactividad).
+
+**Desde la consola AWS** → Lambda → tu función → Configuration → Environment variables:
+```
+S3_BUCKET = prize-roulette-data-703216893961
+```
+
+**O al hacer deploy:**
+```bash
+S3_BUCKET=prize-roulette-data-703216893961 ./deploy-aws.sh
+```
+
+El bucket ya existe. El IAM role de Lambda necesita permisos `s3:GetObject` y `s3:PutObject` sobre ese bucket.
 
 ### Primer deploy
 ```bash
@@ -122,44 +196,47 @@ chmod +x deploy-aws.sh
 ./deploy-aws.sh
 ```
 
-El script:
-1. Crea el repositorio ECR
-2. Construye la imagen Docker (`linux/amd64`, sin cache)
-3. Crea el rol IAM de Lambda
-4. Crea o actualiza la función Lambda (128MB, 10s, x86_64)
-5. Crea o reutiliza API Gateway con CORS y throttling
-6. Muestra las URLs al finalizar
-
 ### Re-deploy (actualización de código)
 ```bash
 ./deploy-aws.sh
 ```
-Siempre hace rebuild completo sin cache para garantizar que los últimos cambios se incluyan.
 
 ### Activar GitHub Pages
 1. Ir a **Settings → Pages** en el repo
 2. Source: **GitHub Actions**
-3. El workflow `.github/workflows/deploy-pages.yml` se ejecuta automáticamente en cada push a `main`
+3. El workflow `.github/workflows/deploy-pages.yml` se ejecuta en cada push a `main`
 
-### Variables de entorno opcionales
-```bash
-ADMIN_PASSWORD=mipassword ./deploy-aws.sh
-MEETUP_URL=https://www.meetup.com/mi-grupo/ ./deploy-aws.sh
+### Variables de entorno Lambda
+```
+S3_BUCKET        = prize-roulette-data-703216893961   # Persistencia (obligatorio)
+ADMIN_PASSWORD   = tu-password-seguro
+MEETUP_URL       = https://www.meetup.com/aws-girls-peru/
+WEB_APP_URL      = https://dicaalba.github.io/prize-roulette-wheel/
 ```
 
 ---
 
-## 🔧 Desarrollo local
+## Desarrollo local
 
 ```bash
 npm install
 node src/server.js
-# Abre http://localhost:3000
 ```
+
+| URL | Descripción |
+|---|---|
+| http://localhost:3000/ | Ruleta principal |
+| http://localhost:3000/admin/ | Panel admin (con la barra final) |
+| http://localhost:3000/display/ | Pantalla evento |
+
+**En localhost:**
+- Todas las llamadas API van al servidor local (no a AWS)
+- Admin y display se sincronizan por WebSocket real — sin polling, sin costo
+- Los datos persisten en `data/roulette.json` mientras el servidor esté corriendo
 
 ---
 
-## 🧹 Limpieza post-evento
+## Limpieza post-evento
 
 ```bash
 chmod +x cleanup-aws.sh
@@ -167,20 +244,27 @@ chmod +x cleanup-aws.sh
 ```
 
 Elimina: Lambda, API Gateway, ECR repository, IAM role.
+El bucket S3 **no se elimina** (tiene los datos del evento).
 
 ---
 
-## ❓ FAQ
+## FAQ
 
-**¿Por qué no usa WebSocket?**
-Lambda no soporta conexiones persistentes. El frontend hace polling HTTP cada 3 segundos como alternativa — suficiente para sincronización en tiempo real en un evento.
+**¿Por qué no usa WebSocket en producción?**
+Lambda no soporta conexiones persistentes. El frontend detecta el entorno: usa WebSocket real en localhost y polling HTTP cada 15s en producción. Para WebSocket en producción se necesitaría API Gateway WebSocket (~$0 extra) o migrar a ECS/EC2.
 
 **¿Por qué API Gateway y no Lambda Function URL?**
-La cuenta AWS tiene una política organizacional (SCP) que bloquea el acceso público a Function URLs. API Gateway HTTP API es la alternativa y tiene el mismo costo (~$0 en free tier).
+La cuenta AWS tiene una política organizacional (SCP) que bloquea el acceso público a Function URLs. API Gateway HTTP API es la alternativa con el mismo costo (~$0 en free tier).
 
-**¿Los premios se resetean si reinicio?**
-Sí. Lambda almacena datos en `/tmp` que es efímero. Para un evento de horas es suficiente. Si necesitas persistencia, se puede agregar DynamoDB con ~$0 adicional de costo.
+**¿Los premios se resetean si reinicio el servidor local?**
+No. Los datos se guardan en `data/roulette.json` y persisten entre reinicios del servidor local.
+
+**¿Los premios se resetean en Lambda?**
+No, si `S3_BUCKET` está configurado. Cada escritura (crear/editar/eliminar premio, giro ganador) se guarda en S3. Cada nuevo container Lambda carga desde S3 al iniciar.
+
+**¿El admin de GitHub Pages y el admin de localhost comparten datos?**
+No directamente. El admin en localhost modifica `data/roulette.json` local. El admin en GitHub Pages modifica el estado en Lambda/S3. Para el evento, se recomienda usar el admin en localhost para tener WebSocket en tiempo real con el display.
 
 ---
 
-Hecho con 💜 para [AWS Girls Perú](https://awsgirlsperu.com)
+Hecho con amor para [AWS Girls Perú](https://awsgirlsperu.com)

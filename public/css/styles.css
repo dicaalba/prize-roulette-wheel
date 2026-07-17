@@ -248,7 +248,7 @@ body {
 
 #wheel-canvas {
   display: block;
-  max-width: 100%;
+  width: min(360px, calc(100vw - 72px));
   height: auto;
   filter: drop-shadow(0 0 10px rgba(255,107,157,0.18));
 }
@@ -280,6 +280,7 @@ body {
   text-transform: uppercase;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   position: relative;
   overflow: hidden;
@@ -294,7 +295,7 @@ body {
   pointer-events: none;
 }
 
-.btn-icon { font-size: 1.4rem; }
+.btn-icon { font-size: 1.4rem; line-height: 1; display: inline-flex; align-items: center; }
 .btn-text { position: relative; z-index: 1; }
 
 #spin-btn:hover:not(:disabled) {
@@ -560,6 +561,7 @@ body {
 
 /* ── Responsive ── */
 @media (max-width: 400px) {
+  .wheel-section { padding: 16px 16px 16px; }
   #spin-btn { padding: 16px 40px; font-size: 1.15rem; }
   .modal-content { padding: 36px 20px 28px; border-radius: 22px; }
   .result-heading { font-size: 1.5rem; }
