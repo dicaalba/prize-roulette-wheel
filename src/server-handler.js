@@ -124,13 +124,23 @@ async function handleRequest(req, res) {
   const publicDir = path.join(__dirname, '..', 'public');
 
   // Admin panel
-  if (pathname === '/admin' || pathname === '/admin/') {
+  if (pathname === '/admin') {
+    res.writeHead(301, { 'Location': '/admin/' });
+    res.end();
+    return;
+  }
+  if (pathname === '/admin/') {
     return serveStaticFile(res, path.join(publicDir, 'admin', 'index.html')) ||
       sendJSON(res, 404, { error: 'Not found' });
   }
 
   // QR Display screen
-  if (pathname === '/display' || pathname === '/display/') {
+  if (pathname === '/display') {
+    res.writeHead(301, { 'Location': '/display/' });
+    res.end();
+    return;
+  }
+  if (pathname === '/display/') {
     return serveStaticFile(res, path.join(publicDir, 'display', 'index.html')) ||
       sendJSON(res, 404, { error: 'Not found' });
   }
