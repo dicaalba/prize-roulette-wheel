@@ -169,7 +169,9 @@ let instance = null;
 
 function getDatabase(dbPath) {
   if (!instance) {
-    instance = new Database(dbPath);
+    // Usar DB_PATH del entorno si no se pasa argumento (necesario para Lambda)
+    const resolvedPath = dbPath || process.env.DB_PATH || path.join(__dirname, '../../data/roulette.json');
+    instance = new Database(resolvedPath);
     instance.initialize();
   }
   return instance;
