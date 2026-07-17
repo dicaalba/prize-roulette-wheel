@@ -435,15 +435,7 @@ td {
 
 tbody tr {
   transition: background 0.15s;
-  animation: rowIn 0.3s ease both;
 }
-
-tbody tr:nth-child(1) { animation-delay: 0.04s; }
-tbody tr:nth-child(2) { animation-delay: 0.08s; }
-tbody tr:nth-child(3) { animation-delay: 0.12s; }
-tbody tr:nth-child(4) { animation-delay: 0.16s; }
-tbody tr:nth-child(5) { animation-delay: 0.20s; }
-tbody tr:nth-child(6) { animation-delay: 0.24s; }
 
 tbody tr:hover {
   background: rgba(255, 107, 157, 0.05);
