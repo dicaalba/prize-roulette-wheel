@@ -8,14 +8,14 @@ A web-based prize roulette wheel application with real-time stock management, bu
 - Admin panel for prize management
 - QR Display screen for events
 - Real-time stock updates via WebSocket
-- SQLite database for persistence
+- JSON file-based persistence
 - Spanish UI
 
 ## Tech Stack
 
-- **Backend:** Node.js (Express + WebSocket + SQLite) — all built-in, zero external deps
+- **Backend:** Node.js (HTTP + WebSocket) — all built-in, zero external deps
 - **Frontend:** Vanilla HTML/CSS/JS with Canvas API
-- **Database:** SQLite (via native `node:sqlite` module)
+- **Database:** JSON file-based persistence
 
 ## Setup
 
@@ -31,8 +31,8 @@ node src/server.js
 |----------|---------|-------------|
 | `PORT` | `3000` | Server port |
 | `ADMIN_PASSWORD` | `admin123` | Admin panel password |
-| `MEETUP_URL` | — | URL for meetup event link |
-| `WEB_APP_URL` | — | Public URL of the web app |
+| `MEETUP_URL` | `https://www.meetup.com/aws-girls-peru/` | URL for meetup event link |
+| `WEB_APP_URL` | `http://localhost:3000` | Public URL of the web app |
 
 You can copy `.env.example` to `.env` and customize these values.
 
@@ -42,6 +42,32 @@ You can copy `.env.example` to `.env` and customize these values.
 - **http://localhost:3000/admin** — Admin panel (prize management)
 - **http://localhost:3000/display** — QR Display screen (for projectors/TVs at events)
 
+## Deployment Options
+
+### Option 1: All-in-One (Local/EC2)
+```bash
+node src/server.js
+```
+Everything runs on one server.
+
+### Option 2: Split (GitHub Pages + AWS Lambda) — Recommended
+
+| Component | Platform | URL |
+|-----------|----------|-----|
+| Frontend | GitHub Pages | https://dicaalba.github.io/prize-roulette-wheel/ |
+| Backend | AWS Lambda | Your Lambda Function URL |
+
+**Steps:**
+1. Deploy the backend: `./deploy-aws.sh`
+2. Copy your Lambda Function URL
+3. Edit `public/js/config.js` and set `API_BASE_URL` to your Lambda URL
+4. Push to main — GitHub Actions will deploy the frontend automatically
+
+**Frontend URLs (GitHub Pages):**
+- 🎰 Ruleta: https://dicaalba.github.io/prize-roulette-wheel/
+- 🔐 Admin: https://dicaalba.github.io/prize-roulette-wheel/admin/
+- 📺 Display: https://dicaalba.github.io/prize-roulette-wheel/display/
+
 ## Project Structure
 
 ```
@@ -49,6 +75,7 @@ You can copy `.env.example` to `.env` and customize these values.
 │   ├── index.html          # Main roulette wheel page
 │   ├── css/styles.css      # Global styles
 │   ├── js/                 # Client-side modules
+│   │   ├── config.js       # Frontend configuration (API URL, etc.)
 │   │   ├── app.js
 │   │   ├── wheelRenderer.js
 │   │   ├── spinEngine.js
@@ -59,14 +86,20 @@ You can copy `.env.example` to `.env` and customize these values.
 │   └── display/            # QR Display screen
 ├── src/
 │   ├── server.js           # Main server entry point
-│   ├── db/database.js      # SQLite database layer
+│   ├── server-handler.js   # Request handler (shared with Lambda)
+│   ├── db/database.js      # JSON file-based database layer
 │   ├── middleware/auth.js  # Authentication middleware
 │   ├── routes/prizes.js    # Prize API routes
 │   └── services/           # Business logic
 │       ├── prizeService.js
 │       ├── spinService.js
 │       └── wsManager.js
-├── data/                   # SQLite database (gitignored)
+├── .github/workflows/      # GitHub Actions
+│   └── deploy-pages.yml    # Auto-deploy frontend to GitHub Pages
+├── data/                   # Database (gitignored)
+├── lambda.js               # AWS Lambda handler
+├── deploy-aws.sh           # AWS deployment script
+├── Dockerfile              # Container deployment
 ├── package.json
 └── .env.example
 ```

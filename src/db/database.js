@@ -37,7 +37,7 @@ class Database {
     return {
       prizes: [],
       config: {
-        meetup_url: process.env.MEETUP_URL || 'https://www.meetup.com/your-meetup-group',
+        meetup_url: process.env.MEETUP_URL || 'https://www.meetup.com/aws-girls-peru/',
         consolation_message: '¡Mejor suerte la próxima vez! Síguenos en Meetup para más oportunidades.',
         web_app_url: process.env.WEB_APP_URL || 'http://localhost:3000'
       }

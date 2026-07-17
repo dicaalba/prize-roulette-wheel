@@ -22,8 +22,10 @@ class WSClient {
   }
 
   connect() {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    const wsBase = CONFIG.WS_URL || window.location.origin;
+    const protocol = wsBase.startsWith('https') ? 'wss:' : 'ws:';
+    const host = wsBase.replace(/^https?:\/\//, '');
+    const wsUrl = `${protocol}//${host}/ws`;
 
     try {
       this.ws = new WebSocket(wsUrl);
@@ -121,7 +123,7 @@ class WSClient {
    */
   async _pollPrizes() {
     try {
-      const response = await fetch('/api/prizes');
+      const response = await fetch(CONFIG.API_BASE_URL + '/api/prizes');
       if (response.ok) {
         const data = await response.json();
         // Notify all stock:updated handlers with fresh data
