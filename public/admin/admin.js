@@ -115,7 +115,7 @@ function renderTable() {
       <td>${escapeHtml(prize.name)}</td>
       <td>${escapeHtml(prize.description || '-')}</td>
       <td class="stock-cell ${prize.stock === 0 ? 'stock-zero' : ''}">${prize.stock}</td>
-      <td><span class="type-badge ${prize.is_no_prize ? 'type-no-prize' : 'type-prize'}">${prize.is_no_prize ? 'Sin Premio' : 'Premio'}</span></td>
+      <td><span class="type-badge ${prize.is_no_prize ? 'type-no-prize' : 'type-prize'}">${prize.is_no_prize ? 'Consolación' : 'Premio'}</span></td>
       <td class="action-btns">
         <button class="btn btn-edit" onclick="startEdit('${prize.id}')">Editar</button>
         <button class="btn btn-danger" onclick="deletePrize('${prize.id}')">Eliminar</button>
