@@ -31,7 +31,7 @@ class Database {
     } else {
       this.data = this._createDefaultData();
     }
-    this._persist();
+    this._persistLocal();
   }
 
   _createDefaultData() {
@@ -45,16 +45,23 @@ class Database {
     };
   }
 
-  _persist() {
+  // Writes to local disk only — does NOT mark dirty for S3 sync
+  _persistLocal() {
     const tmpPath = this.dbPath + '.tmp';
     fs.writeFileSync(tmpPath, JSON.stringify(this.data, null, 2), 'utf-8');
     fs.renameSync(tmpPath, this.dbPath);
+  }
+
+  // Writes to local disk AND marks data as needing S3 sync
+  _persist() {
+    this._persistLocal();
     this._dirty = true;
   }
 
+  // Returns: true = loaded from S3, null = S3 empty (NoSuchKey), false = S3 error
   async loadFromS3() {
     const bucket = process.env.S3_BUCKET;
-    if (!bucket) return;
+    if (!bucket) return null;
     try {
       const { S3Client, GetObjectCommand } = require('@aws-sdk/client-s3');
       const s3 = new S3Client({});
@@ -62,8 +69,14 @@ class Database {
       const body = await response.Body.transformToString();
       this.data = JSON.parse(body);
       this._dirty = false;
+      return true;
     } catch (e) {
-      if (e.name !== 'NoSuchKey') console.error('S3 load error:', e.message);
+      this._dirty = false; // never overwrite S3 on a failed load
+      if (e.name !== 'NoSuchKey') {
+        console.error('S3 load error:', e.message);
+        return false;
+      }
+      return null; // S3 was empty — caller should seed defaults
     }
   }
 

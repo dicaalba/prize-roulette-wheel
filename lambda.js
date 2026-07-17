@@ -20,17 +20,13 @@ const DEFAULT_PRIZES = [
   { name: 'USB Drive', description: 'Memoria USB de 16GB', color: '#3498DB', stock: 3, is_no_prize: false, sort_order: 5 }
 ];
 
-// Track cold start initialization
-let initialized = false;
-
 exports.handler = async (event) => {
-  // On cold start: load persisted data from S3 before handling any request
-  if (!initialized) {
-    await db.loadFromS3();
-    if (db.getPrizes().length === 0) {
-      DEFAULT_PRIZES.forEach(p => db.insertPrize(p));
-    }
-    initialized = true;
+  // Load latest data from S3 on every invocation — guarantees consistency
+  // across multiple concurrent Lambda instances (each has its own memory).
+  // S3 GET costs ~$0 and is the authoritative source of truth.
+  const s3Status = await db.loadFromS3();
+  if (db.getPrizes().length === 0) {
+    DEFAULT_PRIZES.forEach(p => db.insertPrize(p));
   }
 
   // Support both API Gateway and Lambda Function URL formats
@@ -139,8 +135,8 @@ exports.handler = async (event) => {
     }, 0);
   });
 
-  // Persist any changes to S3 before returning
-  if (db._dirty) {
+  // Persist mutations to S3, but only if S3 was reachable (don't overwrite on error)
+  if (db._dirty && s3Status !== false) {
     await db.saveToS3();
   }
 

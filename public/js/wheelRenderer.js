@@ -40,7 +40,7 @@ class WheelRenderer {
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Draw text (clipped to segment, dynamically fitted)
+      // Draw text — clipped to segment, centered radially, flipped for left-side segments
       ctx.save();
       ctx.beginPath();
       ctx.moveTo(centerX, centerY);
@@ -49,16 +49,23 @@ class WheelRenderer {
       ctx.clip();
 
       ctx.translate(centerX, centerY);
-      ctx.rotate(startAngle + segmentAngle / 2);
-      ctx.textAlign = 'right';
-      ctx.fillStyle = '#fff';
+
+      const midAngle = startAngle + segmentAngle / 2;
+      const pointsLeft = Math.cos(midAngle) < 0;
+      // Flip text for left-side segments so it's never upside-down
+      ctx.rotate(pointsLeft ? midAngle + Math.PI : midAngle);
 
       const fontSize = Math.max(10, Math.min(14, 180 / segments.length));
       ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#fff';
       ctx.shadowColor = 'rgba(0,0,0,0.5)';
       ctx.shadowBlur = 3;
 
-      const maxTextWidth = radius - 38;
+      // Center text between hub (r=26) and rim, with margin
+      const textX = (radius + 30) / 2;
+      const maxTextWidth = radius - 50;
       let text = segment.name;
       if (ctx.measureText(text).width > maxTextWidth) {
         while (text.length > 2 && ctx.measureText(text.trimEnd() + '…').width > maxTextWidth) {
@@ -66,7 +73,7 @@ class WheelRenderer {
         }
         text = text.trimEnd() + '…';
       }
-      ctx.fillText(text, radius - 16, 5);
+      ctx.fillText(text, pointsLeft ? -textX : textX, 0);
       ctx.restore();
     });
 

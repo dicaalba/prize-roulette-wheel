@@ -138,7 +138,7 @@ if [ -z "$EXISTING_API" ] || [ "$EXISTING_API" == "None" ]; then
     --api-id $API_ID \
     --stage-name '$default' \
     --auto-deploy \
-    --default-route-settings '{"ThrottlingBurstLimit":50,"ThrottlingRateLimit":20}' \
+    --default-route-settings '{"ThrottlingBurstLimit":200,"ThrottlingRateLimit":50}' \
     --region $REGION > /dev/null
 
   aws lambda add-permission \
