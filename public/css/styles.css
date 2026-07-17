@@ -29,7 +29,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 /* Header */
@@ -236,6 +236,71 @@ body {
 .meetup-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 25px var(--glow-pink), 0 6px 25px var(--glow-orange);
+}
+
+/* Community / Redes Sociales */
+.community-section {
+  width: 100%;
+  max-width: 420px;
+  padding: 0 20px 20px;
+  text-align: center;
+}
+
+.community-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 4px 0 14px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.community-divider::before,
+.community-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 107, 157, 0.2);
+}
+
+.social-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: white;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.social-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.social-btn.meetup    { background: linear-gradient(135deg, #ED1C40, #c4122f); }
+.social-btn.linkedin  { background: linear-gradient(135deg, #0077B5, #005885); }
+.social-btn.instagram { background: linear-gradient(135deg, #E1306C, #833AB4); }
+.social-btn.youtube   { background: linear-gradient(135deg, #FF0000, #cc0000); }
+
+.social-icon { font-size: 1rem; }
+
+.website-link {
+  color: var(--accent);
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
 /* Responsive */
