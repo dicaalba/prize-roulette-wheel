@@ -16,7 +16,7 @@ const DEFAULT_PRIZES = [
   { name: 'Camiseta', description: 'Camiseta del evento', color: '#FF9900', stock: 5, is_no_prize: false, sort_order: 1 },
   { name: 'Cupón 20%', description: 'Descuento del 20% en tienda', color: '#2ECC71', stock: 15, is_no_prize: false, sort_order: 2 },
   { name: 'Llavero', description: 'Llavero personalizado', color: '#9B59B6', stock: 8, is_no_prize: false, sort_order: 3 },
-  { name: 'Sin Premio', description: '', color: '#4a5568', stock: 999, is_no_prize: true, sort_order: 4 },
+  { name: '¡Premio Oreo! 🍪', description: '¡No ganaste un premio... pero te llevas una Oreo! 🍪', color: '#4a5568', stock: 999, is_no_prize: true, sort_order: 4 },
   { name: 'USB Drive', description: 'Memoria USB de 16GB', color: '#3498DB', stock: 3, is_no_prize: false, sort_order: 5 }
 ];
 
