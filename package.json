@@ -1,0 +1,12 @@
+{
+  "name": "prize-roulette-wheel",
+  "version": "1.0.0",
+  "description": "Web-based prize roulette wheel with real-time stock management",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node src/server.js"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

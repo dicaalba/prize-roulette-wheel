@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Ruleta de Premios</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>🎰 Ruleta de Premios</h1>
+  </header>
+
+  <section class="wheel-section">
+    <div class="wheel-wrapper">
+      <div class="wheel-pointer"></div>
+      <div id="wheel-container">
+        <canvas id="wheel-canvas" width="400" height="400"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <section class="spin-section">
+    <button id="spin-btn" disabled>Girar</button>
+    <p id="status-text"></p>
+  </section>
+
+  <!-- Result Modal -->
+  <div id="result-modal" class="modal-overlay">
+    <div class="modal-content">
+      <button id="modal-close-btn" class="modal-close">&times;</button>
+      <h2 id="result-heading" class="result-heading"></h2>
+      <p id="result-description"></p>
+      <a id="meetup-btn" class="meetup-button" href="#" target="_blank" rel="noopener noreferrer">
+        Síguenos en Meetup para reclamar tu premio
+      </a>
+    </div>
+  </div>
+
+  <script src="/js/wheelRenderer.js"></script>
+  <script src="/js/spinEngine.js"></script>
+  <script src="/js/animationController.js"></script>
+  <script src="/js/resultModal.js"></script>
+  <script src="/js/wsClient.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,267 @@
+/* Prize Roulette Wheel - Main Styles */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --primary: #2C3E50;
+  --accent: #E74C3C;
+  --success: #2ECC71;
+  --bg: #1a1a2e;
+  --bg-light: #16213e;
+  --text: #ECF0F1;
+  --text-muted: #95A5A6;
+  --modal-bg: rgba(0, 0, 0, 0.85);
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Header */
+.app-header {
+  text-align: center;
+  padding: 10px 20px;
+  width: 100%;
+}
+
+.app-header h1 {
+  font-size: 1.8rem;
+  color: var(--text);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  margin-bottom: 5px;
+}
+
+/* Wheel Section */
+.wheel-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 10px;
+  width: 100%;
+  max-width: 550px;
+}
+
+.wheel-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Pointer indicator */
+.wheel-pointer {
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 15px solid transparent;
+  border-right: 15px solid transparent;
+  border-top: 30px solid var(--accent);
+  z-index: 10;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+
+#wheel-container {
+  transition: transform 0ms;
+}
+
+#wheel-canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Spin Button */
+.spin-section {
+  padding: 20px;
+  text-align: center;
+}
+
+#spin-btn {
+  background: linear-gradient(135deg, var(--accent), #C0392B);
+  color: white;
+  border: none;
+  padding: 16px 48px;
+  font-size: 1.4rem;
+  font-weight: bold;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+  min-width: 180px;
+  min-height: 56px;
+  touch-action: manipulation;
+}
+
+#spin-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(231, 76, 60, 0.6);
+}
+
+#spin-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+#spin-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+#status-text {
+  margin-top: 10px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* Result Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--modal-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  padding: 20px;
+}
+
+.modal-overlay.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-content {
+  background: var(--bg-light);
+  border-radius: 20px;
+  padding: 40px;
+  text-align: center;
+  max-width: 420px;
+  width: 100%;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-close {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.8rem;
+  cursor: pointer;
+  padding: 5px;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  color: var(--text);
+}
+
+.result-heading {
+  font-size: 2rem;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+.result-heading.prize-win {
+  color: var(--success);
+}
+
+.result-heading.no-prize {
+  color: var(--text-muted);
+}
+
+#result-description {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  margin-bottom: 25px;
+  line-height: 1.5;
+}
+
+.meetup-button {
+  display: inline-block;
+  background: linear-gradient(135deg, #E51937, #F05A28);
+  color: white;
+  text-decoration: none;
+  padding: 14px 28px;
+  border-radius: 30px;
+  font-weight: bold;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(229, 25, 55, 0.3);
+}
+
+.meetup-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(229, 25, 55, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
+
+  .app-header h1 {
+    font-size: 1.4rem;
+  }
+
+  .wheel-section {
+    padding: 5px;
+  }
+
+  .modal-content {
+    padding: 30px 20px;
+    margin: 10px;
+  }
+
+  .result-heading {
+    font-size: 1.6rem;
+  }
+
+  #spin-btn {
+    padding: 14px 40px;
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .app-header h1 {
+    font-size: 1.2rem;
+  }
+
+  .modal-content {
+    padding: 25px 15px;
+  }
+
+  .meetup-button {
+    padding: 12px 20px;
+    font-size: 0.85rem;
+  }
+}

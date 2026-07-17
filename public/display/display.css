@@ -1,0 +1,187 @@
+/* QR Display Screen - Optimized for large screens (1024px+) */
+/* Minimum viewport width: 1024px for optimal display */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #0a0a1a;
+  --bg-card: #1a1a2e;
+  --text: #ECF0F1;
+  --text-muted: #95A5A6;
+  --accent: #3498DB;
+  --success: #2ECC71;
+  --danger: #E74C3C;
+  --border: #2C3E50;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.display-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+  gap: 0;
+}
+
+/* QR Panel (Left) */
+.qr-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-right: 1px solid var(--border);
+}
+
+.display-title {
+  font-size: 3rem;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.display-subtitle {
+  font-size: 1.5rem;
+  color: var(--text-muted);
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.qr-container {
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  margin-bottom: 30px;
+}
+
+#qr-canvas {
+  display: block;
+  width: 300px;
+  height: 300px;
+}
+
+.qr-url {
+  color: var(--accent);
+  font-size: 1.2rem;
+  text-align: center;
+  word-break: break-all;
+}
+
+/* Prizes Panel (Right) */
+.prizes-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 40px;
+  overflow-y: auto;
+}
+
+.prizes-title {
+  font-size: 2.2rem;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.prize-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.prize-item {
+  display: flex;
+  align-items: center;
+  padding: 20px 25px;
+  background: var(--bg-card);
+  border-radius: 12px;
+  border-left: 6px solid;
+  transition: all 0.3s ease;
+}
+
+.prize-item.unavailable {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+
+.prize-item.unavailable .prize-stock-badge {
+  background: var(--danger);
+}
+
+.prize-item-name {
+  flex: 1;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.prize-stock-badge {
+  background: var(--success);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  min-width: 60px;
+  text-align: center;
+}
+
+.prize-stock-badge.depleted {
+  background: var(--danger);
+}
+
+.loading-state {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 1.3rem;
+  padding: 40px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .display-container {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  .qr-panel {
+    padding: 30px;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .display-title {
+    font-size: 2rem;
+  }
+
+  .display-subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+  }
+
+  #qr-canvas {
+    width: 200px;
+    height: 200px;
+  }
+
+  .prizes-panel {
+    padding: 20px;
+  }
+
+  .prizes-title {
+    font-size: 1.6rem;
+  }
+
+  .prize-item-name {
+    font-size: 1.2rem;
+  }
+}

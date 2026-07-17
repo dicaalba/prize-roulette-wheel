@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Display - Ruleta de Premios</title>
+  <!-- Optimized for large-screen display: minimum viewport width 1024px -->
+  <link rel="stylesheet" href="/display/display.css">
+</head>
+<body>
+  <div class="display-container">
+    <!-- Left Panel: QR Code -->
+    <section class="qr-panel">
+      <h1 class="display-title">🎰 ¡Gira la Ruleta!</h1>
+      <p class="display-subtitle">Escanea el código QR para participar</p>
+      <div id="qr-container" class="qr-container">
+        <canvas id="qr-canvas"></canvas>
+      </div>
+      <p class="qr-url" id="qr-url-text"></p>
+    </section>
+
+    <!-- Right Panel: Prize List -->
+    <section class="prizes-panel">
+      <h2 class="prizes-title">🎁 Premios Disponibles</h2>
+      <div id="prize-list" class="prize-list">
+        <div class="loading-state">Cargando premios...</div>
+      </div>
+    </section>
+  </div>
+
+  <script src="/js/wsClient.js"></script>
+  <script src="/display/display.js"></script>
+</body>
+</html>
