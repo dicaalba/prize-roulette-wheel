@@ -27,13 +27,14 @@ const wsStatus = document.getElementById('ws-status');
  * API helper with auth
  */
 async function apiRequest(url, method = 'GET', body = null) {
+  const baseUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_BASE_URL) ? CONFIG.API_BASE_URL : '';
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
   const options = { method, headers };
   if (body) options.body = JSON.stringify(body);
 
-  const response = await fetch(url, options);
+  const response = await fetch(`${baseUrl}${url}`, options);
 
   if (response.status === 401) {
     // Token expired or invalid

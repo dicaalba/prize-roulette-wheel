@@ -100,7 +100,7 @@ async function handleSpin() {
 
   try {
     // Call spin API
-    const response = await fetch('/api/spin', { method: 'POST' });
+    const response = await fetch(`${CONFIG.API_BASE_URL}/api/spin`, { method: 'POST' });
     const result = await response.json();
 
     // Animate wheel to winning segment
@@ -145,11 +145,11 @@ async function init() {
 
   // Load config
   try {
-    const configRes = await fetch('/api/config');
+    const configRes = await fetch(`${CONFIG.API_BASE_URL}/api/config`);
     config = await configRes.json();
   } catch (e) {
     config = {
-      meetupUrl: 'https://www.meetup.com',
+      meetupUrl: CONFIG.MEETUP_URL,
       consolationMessage: '¡Mejor suerte la próxima vez!',
       webAppUrl: window.location.origin
     };
@@ -157,7 +157,7 @@ async function init() {
 
   // Load initial prizes
   try {
-    const prizesRes = await fetch('/api/prizes');
+    const prizesRes = await fetch(`${CONFIG.API_BASE_URL}/api/prizes`);
     prizes = await prizesRes.json();
     updateWheel();
     setState(AppState.IDLE);

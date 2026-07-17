@@ -201,19 +201,21 @@ function escapeHtml(text) {
 async function init() {
   // Load config
   try {
-    const configRes = await fetch('/api/config');
+    const baseUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_BASE_URL) ? CONFIG.API_BASE_URL : '';
+    const configRes = await fetch(`${baseUrl}/api/config`);
     config = await configRes.json();
   } catch (e) {
     config = { webAppUrl: window.location.origin };
   }
 
-  // Render QR code
-  const webAppUrl = config.webAppUrl || window.location.origin;
+  // Render QR code — apunta a la página principal del frontend en GitHub Pages
+  const webAppUrl = 'https://dicaalba.github.io/prize-roulette-wheel/';
   renderQRCode(webAppUrl);
 
   // Load initial prizes
   try {
-    const prizesRes = await fetch('/api/prizes');
+    const baseUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_BASE_URL) ? CONFIG.API_BASE_URL : '';
+    const prizesRes = await fetch(`${baseUrl}/api/prizes`);
     prizes = await prizesRes.json();
     updatePrizeList(prizes);
   } catch (e) {

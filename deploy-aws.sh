@@ -52,19 +52,26 @@ ROLE_ARN="arn:aws:iam::$ACCOUNT_ID:role/$ROLE_NAME"
 
 # 5. Create or update Lambda function
 echo "⚡ Creating/Updating Lambda function..."
-aws lambda create-function \
-  --function-name $FUNCTION_NAME \
-  --package-type Image \
-  --code ImageUri=$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME:latest \
-  --role $ROLE_ARN \
-  --timeout 30 \
-  --memory-size 256 \
-  --environment "Variables={ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123},MEETUP_URL=${MEETUP_URL:-https://www.meetup.com},WEB_APP_URL=${WEB_APP_URL:-}}" \
-  --region $REGION 2>/dev/null || \
-aws lambda update-function-code \
-  --function-name $FUNCTION_NAME \
-  --image-uri $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME:latest \
-  --region $REGION
+IMAGE_URI="$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$REPO_NAME:latest"
+
+if aws lambda get-function --function-name $FUNCTION_NAME --region $REGION &>/dev/null; then
+  echo "  → Función existente, actualizando código..."
+  aws lambda update-function-code \
+    --function-name $FUNCTION_NAME \
+    --image-uri $IMAGE_URI \
+    --region $REGION
+else
+  echo "  → Función nueva, creando..."
+  aws lambda create-function \
+    --function-name $FUNCTION_NAME \
+    --package-type Image \
+    --code ImageUri=$IMAGE_URI \
+    --role $ROLE_ARN \
+    --timeout 30 \
+    --memory-size 256 \
+    --environment "{\"Variables\":{\"ADMIN_PASSWORD\":\"${ADMIN_PASSWORD:-admin123}\",\"MEETUP_URL\":\"${MEETUP_URL:-https://www.meetup.com/aws-girls-peru/}\",\"WEB_APP_URL\":\"${WEB_APP_URL:-https://dicaalba.github.io/prize-roulette-wheel/display/}\"}}" \
+    --region $REGION
+fi
 
 # Wait for function to be active
 echo "⏳ Waiting for function to be active..."
