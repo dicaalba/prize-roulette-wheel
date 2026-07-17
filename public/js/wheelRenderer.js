@@ -55,20 +55,23 @@ class WheelRenderer {
       ctx.restore();
     });
 
-    // Draw center circle
+    // Draw outer ring (white chrome bezel)
     ctx.beginPath();
-    ctx.arc(centerX, centerY, 25, 0, 2 * Math.PI);
-    ctx.fillStyle = '#2C3E50';
-    ctx.fill();
-    ctx.strokeStyle = '#ECF0F1';
+    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
     ctx.lineWidth = 3;
     ctx.stroke();
 
-    // Draw outer border
+    // Draw center circle
     ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-    ctx.strokeStyle = '#2C3E50';
-    ctx.lineWidth = 4;
+    ctx.arc(centerX, centerY, 26, 0, 2 * Math.PI);
+    const hubGradient = ctx.createRadialGradient(centerX - 4, centerY - 4, 0, centerX, centerY, 26);
+    hubGradient.addColorStop(0, '#2a1650');
+    hubGradient.addColorStop(1, '#0d0a1e');
+    ctx.fillStyle = hubGradient;
+    ctx.fill();
+    ctx.strokeStyle = '#FF6B9D';
+    ctx.lineWidth = 3;
     ctx.stroke();
   }
 
