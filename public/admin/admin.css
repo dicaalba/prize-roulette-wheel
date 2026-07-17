@@ -53,8 +53,10 @@ body {
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: linear-gradient(-45deg, #1a1a2e, #16213e, #0f3460, #1a1a2e);
   background-size: 400% 400%;
-  animation: bgPulse 12s ease infinite;
+  animation: bgPulse 24s ease infinite;
   color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
   min-height: 100vh;
 }
 
@@ -238,12 +240,10 @@ body {
 }
 
 .admin-header h1 {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--primary), var(--accent));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text);
+  letter-spacing: -0.02em;
 }
 
 .header-actions {
@@ -259,6 +259,7 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
+  filter: drop-shadow(0 0 5px rgba(46, 204, 113, 0.5));
 }
 
 /* ── Cards ── */
@@ -285,6 +286,7 @@ body {
   font-size: 1.2rem;
   color: var(--text);
   font-weight: 600;
+  letter-spacing: -0.01em;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -475,6 +477,7 @@ tbody tr:last-child td {
 .stock-cell {
   font-weight: 700;
   font-size: 1rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .stock-zero {

@@ -25,9 +25,9 @@
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.6; }
-  33%       { transform: translateY(-30px) rotate(120deg); opacity: 0.9; }
-  66%       { transform: translateY(-15px) rotate(240deg); opacity: 0.7; }
+  0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.18; }
+  33%       { transform: translateY(-30px) rotate(120deg); opacity: 0.38; }
+  66%       { transform: translateY(-15px) rotate(240deg); opacity: 0.25; }
 }
 
 @keyframes ringPulse {
@@ -86,8 +86,10 @@ body {
   font-family: 'Poppins', -apple-system, sans-serif;
   background: linear-gradient(-45deg, #07091a, #0d1432, #1a0a2e, #07091a);
   background-size: 400% 400%;
-  animation: bgDrift 16s ease infinite;
+  animation: bgDrift 28s ease infinite;
   color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
   min-height: 100vh;
   overflow: hidden;
   display: flex;
@@ -158,14 +160,9 @@ body {
 
 .org-name {
   font-size: 1.25rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, var(--pink), var(--orange));
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: shimmer 3s linear infinite;
-  letter-spacing: 0.3px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.01em;
 }
 
 .partner-badge {
@@ -219,7 +216,9 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: shimmer 3s linear infinite;
+  animation: shimmer 5s linear infinite;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
 }
 
 .display-subtitle {
@@ -229,6 +228,7 @@ body {
   margin-bottom: 32px;
   max-width: 340px;
   line-height: 1.5;
+  text-wrap: pretty;
 }
 
 /* QR Rings */
@@ -266,10 +266,11 @@ body {
   position: relative;
   z-index: 2;
   box-shadow:
-    0 0 0 4px rgba(255,107,157,0.4),
-    0 0 40px var(--glow-pink),
-    0 0 80px rgba(255,107,157,0.2),
-    0 20px 60px rgba(0,0,0,0.5);
+    0 0 0 1px rgba(255, 107, 157, 0.25),
+    0 0 0 4px rgba(255, 107, 157, 0.12),
+    0 8px 24px rgba(0, 0, 0, 0.4),
+    0 24px 64px rgba(0, 0, 0, 0.5),
+    0 0 48px rgba(255, 107, 157, 0.18);
 }
 
 #qr-canvas {
@@ -340,7 +341,7 @@ body {
   font-size: clamp(1.6rem, 2.5vw, 2.2rem);
   font-weight: 800;
   margin-bottom: 24px;
-  letter-spacing: 0.3px;
+  letter-spacing: -0.02em;
   position: relative;
   padding-bottom: 14px;
 }
@@ -407,7 +408,8 @@ body {
   flex: 1;
   font-size: clamp(1.1rem, 2vw, 1.5rem);
   font-weight: 700;
-  letter-spacing: 0.2px;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
 }
 
 .prize-stock-badge {
@@ -421,6 +423,7 @@ body {
   text-align: center;
   box-shadow: 0 2px 12px var(--glow-pink);
   letter-spacing: 0.5px;
+  font-variant-numeric: tabular-nums;
 }
 
 .prize-stock-badge.depleted {

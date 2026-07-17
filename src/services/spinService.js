@@ -17,7 +17,7 @@ class SpinService {
       if (prize.is_no_prize || prize.stock <= 0) {
         return {
           id: prize.id,
-          name: 'Sin Premio',
+          name: prize.is_no_prize ? prize.name : 'Sin Premio',
           description: '',
           color: prize.is_no_prize ? prize.color : '#95A5A6',
           isNoPrize: true,
@@ -55,6 +55,7 @@ class SpinService {
 
     let outcome = 'no_prize';
     let prizeInfo = null;
+    let noPrizeName = null;
 
     if (!winningSegment.isNoPrize) {
       // Attempt atomic stock decrement
@@ -69,6 +70,9 @@ class SpinService {
         };
       }
       // If decrement failed (stock was 0), outcome stays 'no_prize'
+    } else {
+      const noPrizePrize = this.db.getPrizeById(winningSegment.id);
+      if (noPrizePrize) noPrizeName = noPrizePrize.name;
     }
 
     // Get updated prize list for broadcast
@@ -77,6 +81,7 @@ class SpinService {
     return {
       outcome,
       prize: prizeInfo,
+      noPrizeName,
       segmentIndex,
       updatedPrizes
     };
