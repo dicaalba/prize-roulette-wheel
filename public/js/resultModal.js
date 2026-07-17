@@ -27,7 +27,7 @@ class ResultModal {
       this.heading.className = 'result-heading prize-win';
       this.description.textContent = result.prize.description || '';
     } else {
-      this.heading.textContent = 'Sin Premio';
+      this.heading.textContent = result.noPrizeName || 'Sin Premio';
       this.heading.className = 'result-heading no-prize';
       this.description.textContent = config.consolationMessage || '¡Mejor suerte la próxima vez!';
     }

@@ -30,7 +30,7 @@ function computeWheelSegments(prizeList) {
     if (prize.is_no_prize || prize.stock <= 0) {
       return {
         id: prize.id,
-        name: 'Sin Premio',
+        name: prize.is_no_prize ? prize.name : 'Sin Premio',
         description: '',
         color: prize.is_no_prize ? prize.color : '#95A5A6',
         isNoPrize: true
