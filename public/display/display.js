@@ -1,41 +1,28 @@
 /**
- * QR Display Screen JavaScript
- * Renders QR code and live prize list with real-time updates
+ * Display Screen JavaScript
+ * Muestra QR para participar y premios disponibles en tiempo real
  */
 
 let prizes = [];
-let config = {};
 let wsClient = null;
 
-/**
- * Simple QR Code renderer using Canvas
- * Generates a QR code directly without external libraries
- * This is a simplified version that creates a visual QR representation
- */
+// URL que se codifica en el QR — los participantes la escanean para girar
+const ROULETTE_URL = 'https://dicaalba.github.io/prize-roulette-wheel/';
+
+// ─── QR Code Generator ────────────────────────────────────────────────────────
+
 function renderQRCode(url) {
   const canvas = document.getElementById('qr-canvas');
+  if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  const size = 300;
+  const size = 280;
   canvas.width = size;
   canvas.height = size;
-
-  // Use the QR code generation API endpoint if available,
-  // otherwise render the URL as text with a stylized pattern
-  // We'll generate a simple QR-like pattern and display the URL
   generateQRMatrix(url, canvas, ctx, size);
-
-  // Display URL below QR
   document.getElementById('qr-url-text').textContent = url;
 }
 
-/**
- * Generate a QR code matrix and render it on canvas
- * This implements a basic QR code encoder for alphanumeric data
- */
 function generateQRMatrix(text, canvas, ctx, size) {
-  // Simple QR code generator - creates a functional QR pattern
-  // Using a basic encoding approach for short URLs
-
   const modules = generateQRData(text);
   const moduleCount = modules.length;
   const moduleSize = Math.floor(size / moduleCount);
@@ -43,68 +30,41 @@ function generateQRMatrix(text, canvas, ctx, size) {
 
   ctx.fillStyle = '#FFFFFF';
   ctx.fillRect(0, 0, size, size);
-
   ctx.fillStyle = '#000000';
   for (let row = 0; row < moduleCount; row++) {
     for (let col = 0; col < moduleCount; col++) {
       if (modules[row][col]) {
-        ctx.fillRect(
-          offset + col * moduleSize,
-          offset + row * moduleSize,
-          moduleSize,
-          moduleSize
-        );
+        ctx.fillRect(offset + col * moduleSize, offset + row * moduleSize, moduleSize, moduleSize);
       }
     }
   }
 }
 
-/**
- * Generate QR code data matrix
- * Creates a version 3 QR code (29x29 modules)
- */
 function generateQRData(text) {
   const size = 29;
   const matrix = Array(size).fill(null).map(() => Array(size).fill(false));
-
-  // Draw finder patterns (3 corners)
   drawFinderPattern(matrix, 0, 0);
   drawFinderPattern(matrix, size - 7, 0);
   drawFinderPattern(matrix, 0, size - 7);
-
-  // Draw alignment pattern (for version 3)
   drawAlignmentPattern(matrix, 22, 22);
-
-  // Draw timing patterns
   for (let i = 8; i < size - 8; i++) {
     matrix[6][i] = i % 2 === 0;
     matrix[i][6] = i % 2 === 0;
   }
-
-  // Encode data into remaining modules
   const dataBits = textToBits(text);
   let bitIndex = 0;
-
-  // Fill data in a zigzag pattern (simplified)
   for (let col = size - 1; col >= 0; col -= 2) {
-    if (col === 6) col = 5; // Skip timing pattern column
+    if (col === 6) col = 5;
     for (let row = 0; row < size; row++) {
       for (let c = 0; c < 2 && col - c >= 0; c++) {
         const x = col - c;
         const y = row;
         if (!isReserved(x, y, size)) {
-          if (bitIndex < dataBits.length) {
-            matrix[y][x] = dataBits[bitIndex] === '1';
-            bitIndex++;
-          } else {
-            // Fill remaining with pattern
-            matrix[y][x] = (x + y) % 2 === 0;
-          }
+          matrix[y][x] = bitIndex < dataBits.length ? dataBits[bitIndex++] === '1' : (x + y) % 2 === 0;
         }
       }
     }
   }
-
   return matrix;
 }
 
@@ -116,18 +76,16 @@ function drawFinderPattern(matrix, startRow, startCol) {
       }
     }
   }
-  // Separator
   for (let i = 0; i < 8; i++) {
-    if (startRow + 7 < matrix.length) setIfInBounds(matrix, startRow + 7, startCol + i, false);
-    if (startCol + 7 < matrix.length) setIfInBounds(matrix, startRow + i, startCol + 7, false);
+    setIfInBounds(matrix, startRow + 7, startCol + i, false);
+    setIfInBounds(matrix, startRow + i, startCol + 7, false);
   }
 }
 
 function drawAlignmentPattern(matrix, centerRow, centerCol) {
   for (let r = -2; r <= 2; r++) {
     for (let c = -2; c <= 2; c++) {
-      const row = centerRow + r;
-      const col = centerCol + c;
+      const row = centerRow + r, col = centerCol + c;
       if (row >= 0 && row < matrix.length && col >= 0 && col < matrix.length) {
         matrix[row][col] = Math.abs(r) === 2 || Math.abs(c) === 2 || (r === 0 && c === 0);
       }
@@ -142,33 +100,22 @@ function setIfInBounds(matrix, row, col, value) {
 }
 
 function isReserved(x, y, size) {
-  // Finder patterns + separators
   if (x < 9 && y < 9) return true;
   if (x < 9 && y >= size - 8) return true;
   if (x >= size - 8 && y < 9) return true;
-  // Timing patterns
   if (x === 6 || y === 6) return true;
-  // Alignment pattern
   if (x >= 20 && x <= 24 && y >= 20 && y <= 24) return true;
   return false;
 }
 
 function textToBits(text) {
-  let bits = '';
-  for (let i = 0; i < text.length; i++) {
-    const charCode = text.charCodeAt(i);
-    bits += charCode.toString(2).padStart(8, '0');
-  }
-  return bits;
+  return text.split('').map(c => c.charCodeAt(0).toString(2).padStart(8, '0')).join('');
 }
 
-/**
- * Update the prize list display
- */
+// ─── Prize List ───────────────────────────────────────────────────────────────
+
 function updatePrizeList(prizeList) {
   const container = document.getElementById('prize-list');
-
-  // Filter out "Sin Premio" segments for display
   const displayPrizes = prizeList.filter(p => !p.is_no_prize);
 
   if (displayPrizes.length === 0) {
@@ -195,51 +142,28 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-/**
- * Initialize the display
- */
+// ─── Init ─────────────────────────────────────────────────────────────────────
+
 async function init() {
-  // Load config
-  try {
-    const baseUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_BASE_URL) ? CONFIG.API_BASE_URL : '';
-    const configRes = await fetch(`${baseUrl}/api/config`);
-    config = await configRes.json();
-  } catch (e) {
-    config = { webAppUrl: window.location.origin };
-  }
+  // Renderizar QR apuntando a la ruleta
+  renderQRCode(ROULETTE_URL);
 
-  // Render QR code — apunta a la página principal del frontend en GitHub Pages
-  const webAppUrl = 'https://dicaalba.github.io/prize-roulette-wheel/';
-  renderQRCode(webAppUrl);
+  const baseUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_BASE_URL) ? CONFIG.API_BASE_URL : '';
 
-  // Load initial prizes
+  // Carga inicial de premios
   try {
-    const baseUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_BASE_URL) ? CONFIG.API_BASE_URL : '';
     const prizesRes = await fetch(`${baseUrl}/api/prizes`);
     prizes = await prizesRes.json();
     updatePrizeList(prizes);
   } catch (e) {
-    console.error('Failed to load prizes:', e);
+    console.error('Error cargando premios:', e);
   }
 
-  // Connect WebSocket
+  // Polling via WSClient para actualizaciones en tiempo real
   wsClient = new WSClient();
-
-  wsClient.onPrizesInitial((data) => {
-    prizes = data;
-    updatePrizeList(prizes);
-  });
-
-  wsClient.onPrizesUpdated((data) => {
-    prizes = data;
-    updatePrizeList(prizes);
-  });
-
-  wsClient.onStockUpdated((data) => {
-    prizes = data;
-    updatePrizeList(prizes);
-  });
-
+  wsClient.onPrizesInitial(data => { prizes = data; updatePrizeList(prizes); });
+  wsClient.onPrizesUpdated(data => { prizes = data; updatePrizeList(prizes); });
+  wsClient.onStockUpdated(data => { prizes = data; updatePrizeList(prizes); });
   wsClient.connect();
 }
 

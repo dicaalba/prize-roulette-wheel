@@ -12,6 +12,7 @@ class Database {
     this.dbPath = dbPath || path.join(__dirname, '../../data/roulette.json');
     this.data = null;
     this._lock = false;
+    this._dirty = false;
   }
 
   initialize() {
@@ -48,6 +49,40 @@ class Database {
     const tmpPath = this.dbPath + '.tmp';
     fs.writeFileSync(tmpPath, JSON.stringify(this.data, null, 2), 'utf-8');
     fs.renameSync(tmpPath, this.dbPath);
+    this._dirty = true;
+  }
+
+  async loadFromS3() {
+    const bucket = process.env.S3_BUCKET;
+    if (!bucket) return;
+    try {
+      const { S3Client, GetObjectCommand } = require('@aws-sdk/client-s3');
+      const s3 = new S3Client({});
+      const response = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: 'roulette.json' }));
+      const body = await response.Body.transformToString();
+      this.data = JSON.parse(body);
+      this._dirty = false;
+    } catch (e) {
+      if (e.name !== 'NoSuchKey') console.error('S3 load error:', e.message);
+    }
+  }
+
+  async saveToS3() {
+    const bucket = process.env.S3_BUCKET;
+    if (!bucket) return;
+    try {
+      const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+      const s3 = new S3Client({});
+      await s3.send(new PutObjectCommand({
+        Bucket: bucket,
+        Key: 'roulette.json',
+        Body: JSON.stringify(this.data, null, 2),
+        ContentType: 'application/json'
+      }));
+      this._dirty = false;
+    } catch (e) {
+      console.error('S3 save error:', e.message);
+    }
   }
 
   _generateId() {

@@ -1,11 +1,7 @@
 /* QR Display Screen - AWS Girls Peru Theme */
 /* Optimized for large screens (1024px+) */
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
   --primary: #FF6B9D;
@@ -19,7 +15,6 @@
   --danger: #E74C3C;
   --border: rgba(255, 107, 157, 0.2);
   --glow-pink: rgba(255, 107, 157, 0.3);
-  --glow-orange: rgba(255, 153, 0, 0.2);
 }
 
 body {
@@ -34,23 +29,22 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   min-height: 100vh;
-  gap: 0;
 }
 
-/* QR Panel (Left) */
+/* ── Left Panel (QR + Community) ── */
 .qr-panel {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px;
+  padding: 32px 40px;
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
   border-right: 1px solid var(--border);
 }
 
 .display-title {
-  font-size: 3rem;
-  margin-bottom: 10px;
+  font-size: 2.6rem;
+  margin-bottom: 8px;
   text-align: center;
   background: linear-gradient(135deg, var(--primary), var(--accent));
   -webkit-background-clip: text;
@@ -60,35 +54,97 @@ body {
 }
 
 .display-subtitle {
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   color: var(--text-muted);
-  margin-bottom: 40px;
+  margin-bottom: 24px;
   text-align: center;
 }
 
 .qr-container {
   background: white;
-  padding: 30px;
+  padding: 24px;
   border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 30px var(--glow-pink);
-  margin-bottom: 30px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 30px var(--glow-pink);
+  margin-bottom: 16px;
 }
 
 #qr-canvas {
   display: block;
-  width: 300px;
-  height: 300px;
+  width: 260px;
+  height: 260px;
 }
 
 .qr-url {
   color: var(--accent);
-  font-size: 1.2rem;
+  font-size: 1rem;
   text-align: center;
   word-break: break-all;
   font-weight: 500;
+  margin-bottom: 4px;
 }
 
-/* Prizes Panel (Right) */
+/* ── Community Section ── */
+.community-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 400px;
+  margin: 18px 0 14px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.community-divider::before,
+.community-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.social-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 12px;
+}
+
+.social-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: white;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.social-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
+.social-btn.meetup    { background: linear-gradient(135deg, #ED1C40, #c4122f); }
+.social-btn.linkedin  { background: linear-gradient(135deg, #0077B5, #005885); }
+.social-btn.instagram { background: linear-gradient(135deg, #E1306C, #833AB4); }
+.social-btn.youtube   { background: linear-gradient(135deg, #FF0000, #cc0000); }
+
+.social-icon { font-size: 1.1rem; }
+
+.website-link {
+  color: var(--accent);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* ── Right Panel (Prizes) ── */
 .prizes-panel {
   display: flex;
   flex-direction: column;
@@ -121,24 +177,17 @@ body {
   padding: 20px 25px;
   background: var(--bg-card);
   border-radius: 12px;
-  border-left: 6px solid;
-  transition: all 0.3s ease;
   border: 1px solid var(--border);
   border-left: 6px solid;
   backdrop-filter: blur(10px);
+  transition: box-shadow 0.3s;
 }
 
-.prize-item:hover {
-  box-shadow: 0 4px 15px var(--glow-pink);
-}
+.prize-item:hover { box-shadow: 0 4px 15px var(--glow-pink); }
 
 .prize-item.unavailable {
   opacity: 0.4;
   text-decoration: line-through;
-}
-
-.prize-item.unavailable .prize-stock-badge {
-  background: var(--danger);
 }
 
 .prize-item-name {
@@ -158,9 +207,7 @@ body {
   text-align: center;
 }
 
-.prize-stock-badge.depleted {
-  background: var(--danger);
-}
+.prize-stock-badge.depleted { background: var(--danger); }
 
 .loading-state {
   text-align: center;
@@ -169,42 +216,27 @@ body {
   padding: 40px;
 }
 
-/* Responsive adjustments */
+/* ── Responsive ── */
 @media (max-width: 1024px) {
   .display-container {
     grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
+    overflow-y: auto;
   }
 
+  body { overflow: auto; }
+
   .qr-panel {
-    padding: 30px;
+    padding: 24px;
     border-right: none;
     border-bottom: 1px solid var(--border);
   }
 
-  .display-title {
-    font-size: 2rem;
-  }
+  .display-title { font-size: 2rem; }
+  .display-subtitle { font-size: 1.1rem; margin-bottom: 16px; }
 
-  .display-subtitle {
-    font-size: 1.2rem;
-    margin-bottom: 20px;
-  }
+  #qr-canvas { width: 200px; height: 200px; }
 
-  #qr-canvas {
-    width: 200px;
-    height: 200px;
-  }
-
-  .prizes-panel {
-    padding: 20px;
-  }
-
-  .prizes-title {
-    font-size: 1.6rem;
-  }
-
-  .prize-item-name {
-    font-size: 1.2rem;
-  }
+  .prizes-panel { padding: 20px; }
+  .prizes-title { font-size: 1.6rem; }
+  .prize-item-name { font-size: 1.2rem; }
 }

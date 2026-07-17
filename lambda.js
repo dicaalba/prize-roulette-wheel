@@ -2,32 +2,37 @@
  * AWS Lambda handler for Prize Roulette Wheel
  * Wraps the HTTP server handler for API Gateway / Lambda Function URL integration
  */
-const path = require('path');
 
 // Set environment for Lambda (use /tmp for writable storage)
 process.env.DB_PATH = process.env.DB_PATH || '/tmp/roulette.json';
 
 const { handleRequest } = require('./src/server-handler');
-
-// Initialize database and seed on cold start
 const { getDatabase } = require('./src/db/database');
+
 const db = getDatabase(process.env.DB_PATH);
 
-// Seed initial prizes if database is empty
-const prizes = db.getPrizes();
-if (prizes.length === 0) {
-  const defaultPrizes = [
-    { name: 'Sticker Pack', description: 'Set de stickers exclusivos', color: '#FF6B9D', stock: 10, is_no_prize: false, sort_order: 0 },
-    { name: 'Camiseta', description: 'Camiseta del evento', color: '#FF9900', stock: 5, is_no_prize: false, sort_order: 1 },
-    { name: 'Cupón 20%', description: 'Descuento del 20% en tienda', color: '#2ECC71', stock: 15, is_no_prize: false, sort_order: 2 },
-    { name: 'Llavero', description: 'Llavero personalizado', color: '#9B59B6', stock: 8, is_no_prize: false, sort_order: 3 },
-    { name: 'Sin Premio', description: '', color: '#4a5568', stock: 999, is_no_prize: true, sort_order: 4 },
-    { name: 'USB Drive', description: 'Memoria USB de 16GB', color: '#3498DB', stock: 3, is_no_prize: false, sort_order: 5 }
-  ];
-  defaultPrizes.forEach(p => db.insertPrize(p));
-}
+const DEFAULT_PRIZES = [
+  { name: 'Sticker Pack', description: 'Set de stickers exclusivos', color: '#FF6B9D', stock: 10, is_no_prize: false, sort_order: 0 },
+  { name: 'Camiseta', description: 'Camiseta del evento', color: '#FF9900', stock: 5, is_no_prize: false, sort_order: 1 },
+  { name: 'Cupón 20%', description: 'Descuento del 20% en tienda', color: '#2ECC71', stock: 15, is_no_prize: false, sort_order: 2 },
+  { name: 'Llavero', description: 'Llavero personalizado', color: '#9B59B6', stock: 8, is_no_prize: false, sort_order: 3 },
+  { name: 'Sin Premio', description: '', color: '#4a5568', stock: 999, is_no_prize: true, sort_order: 4 },
+  { name: 'USB Drive', description: 'Memoria USB de 16GB', color: '#3498DB', stock: 3, is_no_prize: false, sort_order: 5 }
+];
+
+// Track cold start initialization
+let initialized = false;
 
 exports.handler = async (event) => {
+  // On cold start: load persisted data from S3 before handling any request
+  if (!initialized) {
+    await db.loadFromS3();
+    if (db.getPrizes().length === 0) {
+      DEFAULT_PRIZES.forEach(p => db.insertPrize(p));
+    }
+    initialized = true;
+  }
+
   // Support both API Gateway and Lambda Function URL formats
   const httpMethod = event.httpMethod || event.requestContext?.http?.method || 'GET';
   const rawPath = event.path || event.rawPath || '/';
@@ -51,7 +56,7 @@ exports.handler = async (event) => {
 
   const url = rawPath + (queryParams ? '?' + new URLSearchParams(queryParams).toString() : '');
 
-  return new Promise((resolve) => {
+  const result = await new Promise((resolve) => {
     // Create mock request object
     const dataCallbacks = [];
     const endCallbacks = [];
@@ -133,4 +138,11 @@ exports.handler = async (event) => {
       endCallbacks.forEach(cb => cb());
     }, 0);
   });
+
+  // Persist any changes to S3 before returning
+  if (db._dirty) {
+    await db.saveToS3();
+  }
+
+  return result;
 };
