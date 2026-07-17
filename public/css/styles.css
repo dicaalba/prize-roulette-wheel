@@ -14,15 +14,48 @@
   --bg-light: #16213e;
   --text: #FFFFFF;
   --text-muted: #b8c5d6;
-  --modal-bg: rgba(0, 0, 0, 0.9);
+  --modal-bg: rgba(0, 0, 0, 0.85);
   --success: #2ECC71;
   --glow-pink: rgba(255, 107, 157, 0.4);
   --glow-orange: rgba(255, 153, 0, 0.3);
 }
 
+@keyframes bgPulse {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+
+@keyframes btnPulse {
+  0%, 100% { box-shadow: 0 4px 20px var(--glow-pink), 0 4px 20px var(--glow-orange); }
+  50%       { box-shadow: 0 4px 35px var(--glow-pink), 0 4px 35px var(--glow-orange), 0 0 60px rgba(255,107,157,0.2); }
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.85) translateY(20px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes confettiPop {
+  0%   { transform: scale(0.5); opacity: 0; }
+  60%  { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 body {
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
+  background: linear-gradient(-45deg, #1a1a2e, #16213e, #0f3460, #1a1a2e);
+  background-size: 400% 400%;
+  animation: bgPulse 12s ease infinite;
   color: var(--text);
   min-height: 100vh;
   display: flex;
@@ -35,20 +68,21 @@ body {
 /* Header */
 .app-header {
   text-align: center;
-  padding: 10px 20px;
+  padding: 16px 20px 8px;
   width: 100%;
+  animation: fadeInUp 0.5s ease both;
 }
 
 .app-header h1 {
-  font-size: 1.8rem;
-  color: var(--text);
-  text-shadow: 0 2px 10px var(--glow-pink);
-  margin-bottom: 5px;
+  font-size: 1.7rem;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--primary), var(--accent));
+  background: linear-gradient(135deg, var(--primary), var(--accent), var(--primary));
+  background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  animation: shimmer 4s linear infinite;
+  letter-spacing: 0.3px;
 }
 
 /* Wheel Section */
@@ -61,6 +95,7 @@ body {
   padding: 10px;
   width: 100%;
   max-width: 550px;
+  animation: fadeInUp 0.5s ease 0.1s both;
 }
 
 .wheel-wrapper {
@@ -68,6 +103,17 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Glow ring behind wheel */
+.wheel-wrapper::before {
+  content: '';
+  position: absolute;
+  width: 110%;
+  height: 110%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,107,157,0.08) 0%, transparent 70%);
+  pointer-events: none;
 }
 
 /* Pointer indicator */
@@ -93,47 +139,61 @@ body {
   display: block;
   max-width: 100%;
   height: auto;
-  filter: drop-shadow(0 0 20px rgba(255, 107, 157, 0.2));
+  filter: drop-shadow(0 0 30px rgba(255, 107, 157, 0.25));
 }
 
 /* Spin Button */
 .spin-section {
   padding: 20px;
   text-align: center;
+  animation: fadeInUp 0.5s ease 0.2s both;
 }
 
 #spin-btn {
   background: linear-gradient(135deg, var(--primary), var(--accent));
   color: white;
   border: none;
-  padding: 16px 48px;
+  padding: 16px 52px;
   font-size: 1.4rem;
   font-weight: 700;
   border-radius: 50px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 20px var(--glow-pink), 0 4px 20px var(--glow-orange);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  animation: btnPulse 2.5s ease-in-out infinite;
   min-width: 180px;
   min-height: 56px;
   touch-action: manipulation;
   font-family: 'Poppins', sans-serif;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
   text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+}
+
+#spin-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+  border-radius: 50px;
+  pointer-events: none;
 }
 
 #spin-btn:hover:not(:disabled) {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 8px 30px var(--glow-pink), 0 8px 30px var(--glow-orange);
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 10px 40px var(--glow-pink), 0 10px 40px var(--glow-orange);
+  animation: none;
 }
 
 #spin-btn:active:not(:disabled) {
-  transform: translateY(0) scale(0.98);
+  transform: translateY(0) scale(0.97);
 }
 
 #spin-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
   transform: none;
+  animation: none;
   box-shadow: none;
 }
 
@@ -159,7 +219,7 @@ body {
   visibility: hidden;
   transition: opacity 0.3s ease, visibility 0.3s ease;
   padding: 20px;
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(8px);
 }
 
 .modal-overlay.visible {
@@ -167,45 +227,57 @@ body {
   visibility: visible;
 }
 
+.modal-overlay.visible .modal-content {
+  animation: modalIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
 .modal-content {
-  background: linear-gradient(135deg, #1e2a3a 0%, #16213e 100%);
-  border-radius: 20px;
-  padding: 40px;
+  background: linear-gradient(160deg, #1e2a3a 0%, #0f1f35 100%);
+  border-radius: 24px;
+  padding: 44px 40px 36px;
   text-align: center;
-  max-width: 420px;
+  max-width: 440px;
   width: 100%;
   position: relative;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 30px var(--glow-pink);
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.7), 0 0 40px var(--glow-pink);
   border: 1px solid rgba(255, 107, 157, 0.3);
 }
 
 .modal-close {
   position: absolute;
-  top: 15px;
-  right: 20px;
-  background: none;
+  top: 14px;
+  right: 18px;
+  background: rgba(255,255,255,0.08);
   border: none;
   color: var(--text-muted);
-  font-size: 1.8rem;
+  font-size: 1.4rem;
   cursor: pointer;
-  padding: 5px;
+  padding: 4px 8px;
   line-height: 1;
-  transition: color 0.2s;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s;
 }
 
 .modal-close:hover {
+  background: rgba(255,107,157,0.2);
   color: var(--primary);
 }
 
 .result-heading {
-  font-size: 2rem;
-  margin-bottom: 15px;
+  font-size: 2.1rem;
+  margin-bottom: 12px;
   font-weight: 700;
+  line-height: 1.2;
 }
 
 .result-heading.prize-win {
-  color: var(--accent);
-  text-shadow: 0 0 15px var(--glow-orange);
+  background: linear-gradient(135deg, var(--accent), #FFD700);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 2s linear infinite, confettiPop 0.5s ease both;
+  text-shadow: none;
 }
 
 .result-heading.no-prize {
@@ -214,9 +286,9 @@ body {
 
 #result-description {
   color: var(--text-muted);
-  font-size: 1.1rem;
-  margin-bottom: 25px;
-  line-height: 1.5;
+  font-size: 1.05rem;
+  margin-bottom: 28px;
+  line-height: 1.6;
 }
 
 .meetup-button {
@@ -225,34 +297,48 @@ body {
   color: white;
   text-decoration: none;
   padding: 14px 28px;
-  border-radius: 30px;
+  border-radius: 50px;
   font-weight: 600;
   font-size: 0.95rem;
-  transition: all 0.3s ease;
+  transition: transform 0.2s, box-shadow 0.2s;
   box-shadow: 0 4px 15px var(--glow-pink);
   font-family: 'Poppins', sans-serif;
+  letter-spacing: 0.3px;
+  position: relative;
+  overflow: hidden;
+}
+
+.meetup-button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+  border-radius: 50px;
 }
 
 .meetup-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 25px var(--glow-pink), 0 6px 25px var(--glow-orange);
+  box-shadow: 0 8px 28px var(--glow-pink), 0 8px 28px var(--glow-orange);
 }
 
 /* Community / Redes Sociales */
 .community-section {
   width: 100%;
-  max-width: 420px;
-  padding: 0 20px 20px;
+  max-width: 440px;
+  padding: 0 20px 24px;
   text-align: center;
+  animation: fadeInUp 0.5s ease 0.3s both;
 }
 
 .community-divider {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin: 4px 0 14px;
+  gap: 10px;
+  margin: 6px 0 14px;
   color: var(--text-muted);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
 .community-divider::before,
@@ -260,14 +346,14 @@ body {
   content: '';
   flex: 1;
   height: 1px;
-  background: rgba(255, 107, 157, 0.2);
+  background: rgba(255, 107, 157, 0.25);
 }
 
 .social-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .social-btn {
@@ -276,18 +362,28 @@ body {
   justify-content: center;
   gap: 7px;
   padding: 9px 12px;
-  border-radius: 10px;
+  border-radius: 12px;
   text-decoration: none;
   font-weight: 600;
   font-size: 0.85rem;
   color: white;
   transition: transform 0.2s, box-shadow 0.2s;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.social-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 60%);
+  pointer-events: none;
 }
 
 .social-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
 }
 
 .social-btn.meetup    { background: linear-gradient(135deg, #ED1C40, #c4122f); }
@@ -301,30 +397,29 @@ body {
   color: var(--accent);
   font-size: 0.9rem;
   font-weight: 600;
+  text-decoration: none;
+  letter-spacing: 0.3px;
+  transition: opacity 0.2s;
+  display: inline-block;
 }
+
+.website-link:hover { opacity: 0.75; }
 
 /* Responsive */
 @media (max-width: 768px) {
-  body {
-    padding: 10px;
-  }
+  body { padding: 10px; }
 
-  .app-header h1 {
-    font-size: 1.4rem;
-  }
+  .app-header h1 { font-size: 1.35rem; }
 
-  .wheel-section {
-    padding: 5px;
-  }
+  .wheel-section { padding: 5px; }
 
   .modal-content {
-    padding: 30px 20px;
+    padding: 32px 20px 28px;
     margin: 10px;
+    border-radius: 20px;
   }
 
-  .result-heading {
-    font-size: 1.6rem;
-  }
+  .result-heading { font-size: 1.7rem; }
 
   #spin-btn {
     padding: 14px 40px;
@@ -333,13 +428,9 @@ body {
 }
 
 @media (max-width: 400px) {
-  .app-header h1 {
-    font-size: 1.2rem;
-  }
+  .app-header h1 { font-size: 1.15rem; }
 
-  .modal-content {
-    padding: 25px 15px;
-  }
+  .modal-content { padding: 28px 16px 22px; }
 
   .meetup-button {
     padding: 12px 20px;
