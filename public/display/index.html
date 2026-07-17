@@ -3,32 +3,80 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Display - Ruleta AWS Girls Peru</title>
+  <title>Display - Ruleta AWS Girls Peru × KCD Lima 2026</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="display.css">
 </head>
 <body>
-  <div class="display-container">
-    <!-- Left Panel: QR solo -->
+
+  <!-- Floating background particles -->
+  <div class="particles" aria-hidden="true">
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+
+  <!-- Top bar -->
+  <header class="top-bar">
+    <div class="top-bar-left">
+      <span class="org-name">AWS Girls Peru</span>
+      <span class="partner-badge">⭐ Community Partner</span>
+    </div>
+    <div class="top-bar-right">
+      <span class="event-name">KCD Lima 2026</span>
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <main class="display-container">
+
+    <!-- Left: QR -->
     <section class="qr-panel">
-      <h1 class="display-title">¡Gira la Ruleta!</h1>
-      <p class="display-subtitle">Escanea el código QR para participar</p>
-      <div id="qr-container" class="qr-container">
-        <canvas id="qr-canvas"></canvas>
-        <p id="qr-url-text" class="qr-url-text"></p>
+      <h1 class="display-title">¡Gira &amp; Gana!</h1>
+      <p class="display-subtitle">Escanea el QR con tu celular y prueba tu suerte</p>
+
+      <div class="qr-wrapper">
+        <div class="qr-ring qr-ring--outer" aria-hidden="true"></div>
+        <div class="qr-ring qr-ring--inner" aria-hidden="true"></div>
+        <div id="qr-container" class="qr-container">
+          <canvas id="qr-canvas"></canvas>
+        </div>
       </div>
+
+      <div class="arrow-hint" aria-hidden="true">
+        <span>▼</span><span>▼</span><span>▼</span>
+      </div>
+      <p class="scan-hint">¡Es gratis y dura solo segundos!</p>
     </section>
 
-    <!-- Right Panel: Prize List -->
+    <!-- Divider -->
+    <div class="panel-divider" aria-hidden="true">
+      <div class="divider-line"></div>
+      <div class="divider-icon">🎰</div>
+      <div class="divider-line"></div>
+    </div>
+
+    <!-- Right: Prizes -->
     <section class="prizes-panel">
-      <h2 class="prizes-title">Premios Disponibles</h2>
+      <h2 class="prizes-title">🎁 Premios Disponibles</h2>
       <div id="prize-list" class="prize-list">
         <div class="loading-state">Cargando premios...</div>
       </div>
+
+      <!-- Social footer -->
+      <div class="social-footer">
+        <p class="follow-text">Síguenos en redes</p>
+        <div class="social-row">
+          <a href="https://www.meetup.com/aws-girls-peru/" target="_blank" rel="noopener" class="social-chip meetup">📅 Meetup</a>
+          <a href="https://www.instagram.com/awsgirlsperu" target="_blank" rel="noopener" class="social-chip instagram">📸 Instagram</a>
+          <a href="https://www.linkedin.com/company/aws-girls-user-group-peru" target="_blank" rel="noopener" class="social-chip linkedin">💼 LinkedIn</a>
+          <a href="https://awsgirlsperu.com" target="_blank" rel="noopener" class="social-chip website">🌐 awsgirlsperu.com</a>
+        </div>
+      </div>
     </section>
-  </div>
+
+  </main>
 
   <script src="../js/config.js"></script>
   <script src="../js/wsClient.js"></script>

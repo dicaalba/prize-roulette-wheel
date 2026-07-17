@@ -19,7 +19,8 @@ function renderQRCode(url) {
   canvas.width = size;
   canvas.height = size;
   generateQRMatrix(url, canvas, ctx, size);
-  document.getElementById('qr-url-text').textContent = url;
+  const urlText = document.getElementById('qr-url-text');
+  if (urlText) urlText.textContent = url;
 }
 
 function generateQRMatrix(text, canvas, ctx, size) {
