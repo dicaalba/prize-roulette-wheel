@@ -3,15 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Display - Ruleta de Premios</title>
-  <!-- Optimized for large-screen display: minimum viewport width 1024px -->
+  <title>Display - Ruleta AWS Girls Peru</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/display/display.css">
 </head>
 <body>
   <div class="display-container">
     <!-- Left Panel: QR Code -->
     <section class="qr-panel">
-      <h1 class="display-title">🎰 ¡Gira la Ruleta!</h1>
+      <h1 class="display-title">¡Gira la Ruleta!</h1>
       <p class="display-subtitle">Escanea el código QR para participar</p>
       <div id="qr-container" class="qr-container">
         <canvas id="qr-canvas"></canvas>
@@ -21,7 +23,7 @@
 
     <!-- Right Panel: Prize List -->
     <section class="prizes-panel">
-      <h2 class="prizes-title">🎁 Premios Disponibles</h2>
+      <h2 class="prizes-title">Premios Disponibles</h2>
       <div id="prize-list" class="prize-list">
         <div class="loading-state">Cargando premios...</div>
       </div>

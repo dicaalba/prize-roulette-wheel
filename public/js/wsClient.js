@@ -1,6 +1,7 @@
 /**
  * WebSocket Client - Shared connection manager for all frontend pages
  * Implements automatic reconnection with exponential backoff
+ * Falls back to HTTP polling if WebSocket is unavailable (e.g., Lambda deployment)
  */
 class WSClient {
   constructor() {
@@ -14,6 +15,10 @@ class WSClient {
     this.maxReconnectDelay = 30000;
     this.connected = false;
     this.shouldReconnect = true;
+    this.pollingInterval = null;
+    this.pollingMode = false;
+    this.failedAttempts = 0;
+    this.maxFailedAttempts = 3; // Switch to polling after 3 failures
   }
 
   connect() {
@@ -26,7 +31,9 @@ class WSClient {
       this.ws.onopen = () => {
         console.log('WebSocket connected');
         this.connected = true;
-        this.reconnectDelay = 1000; // Reset backoff
+        this.reconnectDelay = 1000;
+        this.failedAttempts = 0;
+        this.stopPolling();
       };
 
       this.ws.onmessage = (event) => {
@@ -43,6 +50,14 @@ class WSClient {
 
       this.ws.onclose = () => {
         this.connected = false;
+        this.failedAttempts++;
+
+        if (this.failedAttempts >= this.maxFailedAttempts) {
+          console.log('WebSocket unavailable. Switching to HTTP polling mode.');
+          this.startPolling();
+          return;
+        }
+
         if (this.shouldReconnect) {
           console.log(`WebSocket disconnected. Reconnecting in ${this.reconnectDelay}ms...`);
           setTimeout(() => this._reconnect(), this.reconnectDelay);
@@ -55,6 +70,14 @@ class WSClient {
       };
     } catch (e) {
       console.error('WebSocket connection failed:', e);
+      this.failedAttempts++;
+
+      if (this.failedAttempts >= this.maxFailedAttempts) {
+        console.log('WebSocket unavailable. Switching to HTTP polling mode.');
+        this.startPolling();
+        return;
+      }
+
       if (this.shouldReconnect) {
         setTimeout(() => this._reconnect(), this.reconnectDelay);
       }
@@ -64,6 +87,51 @@ class WSClient {
   _reconnect() {
     this.reconnectDelay = Math.min(this.reconnectDelay * 2, this.maxReconnectDelay);
     this.connect();
+  }
+
+  /**
+   * Start HTTP polling as fallback when WebSocket is unavailable
+   */
+  startPolling() {
+    if (this.pollingInterval) return;
+    this.pollingMode = true;
+    console.log('Starting HTTP polling (every 3s)...');
+
+    // Initial fetch
+    this._pollPrizes();
+
+    this.pollingInterval = setInterval(() => {
+      this._pollPrizes();
+    }, 3000);
+  }
+
+  /**
+   * Stop HTTP polling
+   */
+  stopPolling() {
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+      this.pollingInterval = null;
+      this.pollingMode = false;
+    }
+  }
+
+  /**
+   * Poll prizes via HTTP
+   */
+  async _pollPrizes() {
+    try {
+      const response = await fetch('/api/prizes');
+      if (response.ok) {
+        const data = await response.json();
+        // Notify all stock:updated handlers with fresh data
+        if (this.handlers['stock:updated']) {
+          this.handlers['stock:updated'].forEach(cb => cb(data));
+        }
+      }
+    } catch (e) {
+      console.error('Polling error:', e);
+    }
   }
 
   onPrizesInitial(callback) {
@@ -80,12 +148,13 @@ class WSClient {
 
   disconnect() {
     this.shouldReconnect = false;
+    this.stopPolling();
     if (this.ws) {
       this.ws.close();
     }
   }
 
   isConnected() {
-    return this.connected;
+    return this.connected || this.pollingMode;
   }
 }
