@@ -33,7 +33,7 @@ async function apiRequest(url, method = 'GET', body = null) {
   const options = { method, headers };
   if (body) options.body = JSON.stringify(body);
 
-  const response = await fetch(url, options);
+  const response = await fetch(CONFIG.API_BASE_URL + url, options);
 
   if (response.status === 401) {
     // Token expired or invalid

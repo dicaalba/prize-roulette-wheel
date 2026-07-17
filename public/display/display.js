@@ -201,7 +201,7 @@ function escapeHtml(text) {
 async function init() {
   // Load config
   try {
-    const configRes = await fetch('/api/config');
+    const configRes = await fetch(CONFIG.API_BASE_URL + '/api/config');
     config = await configRes.json();
   } catch (e) {
     config = { webAppUrl: window.location.origin };
@@ -213,7 +213,7 @@ async function init() {
 
   // Load initial prizes
   try {
-    const prizesRes = await fetch('/api/prizes');
+    const prizesRes = await fetch(CONFIG.API_BASE_URL + '/api/prizes');
     prizes = await prizesRes.json();
     updatePrizeList(prizes);
   } catch (e) {
