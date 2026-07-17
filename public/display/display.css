@@ -136,10 +136,24 @@ body {
   animation: fadeInDown 0.5s ease both;
 }
 
+.logo-wrapper {
+  background: white;
+  border-radius: 8px;
+  padding: 3px 6px;
+  display: flex;
+  align-items: center;
+}
+
+.org-logo {
+  height: 36px;
+  width: auto;
+  display: block;
+}
+
 .top-bar-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
 }
 
 .org-name {

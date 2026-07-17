@@ -3,19 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Ruleta de Premios - AWS Girls Peru</title>
+  <title>Ruleta de Premios - AWS Girls Peru × KCD Lima 2026</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <header class="app-header">
-    <h1>AWS Girls Peru - Ruleta de Premios</h1>
+
+  <!-- Floating particles -->
+  <div class="particles" aria-hidden="true">
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span>
+  </div>
+
+  <!-- Top bar -->
+  <header class="top-bar">
+    <div class="top-bar-left">
+      <div class="logo-wrapper">
+        <img src="img/logo.png" alt="AWS Girls Peru" class="org-logo">
+      </div>
+      <span class="org-name">AWS Girls Peru</span>
+    </div>
+    <span class="event-badge">KCD Lima 2026</span>
   </header>
 
+  <!-- Title -->
+  <div class="page-title">
+    <h1>¡Gira la Ruleta!</h1>
+    <p class="page-subtitle">Presiona el botón y prueba tu suerte 🎉</p>
+  </div>
+
+  <!-- Wheel -->
   <section class="wheel-section">
     <div class="wheel-wrapper">
+      <div class="wheel-glow" aria-hidden="true"></div>
       <div class="wheel-pointer"></div>
       <div id="wheel-container">
         <canvas id="wheel-canvas" width="400" height="400"></canvas>
@@ -23,14 +45,18 @@
     </div>
   </section>
 
+  <!-- Spin button -->
   <section class="spin-section">
-    <button id="spin-btn" disabled>Girar</button>
+    <button id="spin-btn" disabled>
+      <span class="btn-icon">🎰</span>
+      <span class="btn-text">Girar</span>
+    </button>
     <p id="status-text"></p>
   </section>
 
-  <!-- Redes sociales AWS Girls Peru -->
+  <!-- Community links -->
   <section class="community-section">
-    <div class="community-divider"><span>Síguenos en redes</span></div>
+    <div class="community-divider"><span>Síguenos</span></div>
     <div class="social-grid">
       <a href="https://www.meetup.com/aws-girls-peru/" target="_blank" rel="noopener" class="social-btn meetup">
         <span class="social-icon">📅</span><span>Meetup</span>
@@ -52,10 +78,11 @@
   <div id="result-modal" class="modal-overlay">
     <div class="modal-content">
       <button id="modal-close-btn" class="modal-close">&times;</button>
+      <div class="modal-emoji" id="modal-emoji"></div>
       <h2 id="result-heading" class="result-heading"></h2>
       <p id="result-description"></p>
       <a id="meetup-btn" class="meetup-button" href="#" target="_blank" rel="noopener noreferrer">
-        Síguenos en Meetup para reclamar tu premio
+        Síguenos en Meetup 🎉
       </a>
     </div>
   </div>
