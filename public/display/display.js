@@ -7,7 +7,7 @@ let prizes = [];
 let wsClient = null;
 
 // URL que se codifica en el QR — los participantes la escanean para girar
-const ROULETTE_URL = 'https://dicaalba.github.io/prize-roulette-wheel/';
+const ROULETTE_URL = 'https://ruleta.awsgirlsperu.com/';
 
 // ─── QR Code Generator ────────────────────────────────────────────────────────
 
@@ -67,7 +67,8 @@ async function init() {
   // Carga inicial de premios
   try {
     const prizesRes = await fetch(`${baseUrl}/api/prizes`);
-    prizes = await prizesRes.json();
+    const prizesData = await prizesRes.json();
+    prizes = Array.isArray(prizesData) ? prizesData : (prizesData.prizes || []);
     updatePrizeList(prizes);
   } catch (e) {
     console.error('Error cargando premios:', e);
@@ -78,6 +79,13 @@ async function init() {
   wsClient.onPrizesInitial(data => { prizes = data; updatePrizeList(prizes); });
   wsClient.onPrizesUpdated(data => { prizes = data; updatePrizeList(prizes); });
   wsClient.onStockUpdated(data => { prizes = data; updatePrizeList(prizes); });
+
+  // Display stays alive with a slow heartbeat when paused so it auto-detects activation.
+  // (Only 1 device — the projector — so 1 call/60s is fine.)
+  wsClient.onEventStatus(data => {
+    wsClient.setPollRate(data.event_active ? 15000 : 60000);
+  });
+
   wsClient.connect();
 }
 

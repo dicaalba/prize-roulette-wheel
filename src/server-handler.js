@@ -14,6 +14,7 @@ const {
   deletePrizeRoute,
   spinRoute,
   getConfigRoute,
+  updateEventStatusRoute,
   sendJSON
 } = require('./routes/prizes');
 
@@ -110,6 +111,11 @@ async function handleRequest(req, res) {
       // GET /api/config
       if (pathname === '/api/config' && method === 'GET') {
         return getConfigRoute(req, res);
+      }
+
+      // POST /api/event/status
+      if (pathname === '/api/event/status' && method === 'POST') {
+        return await updateEventStatusRoute(req, res);
       }
 
       // 404 for unknown API routes

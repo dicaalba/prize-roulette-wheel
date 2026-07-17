@@ -1,7 +1,9 @@
 /**
  * WebSocket Client - Shared connection manager for all frontend pages
  * - En localhost: usa WebSocket real (sin polling, actualizaciones instantáneas)
- * - En producción (Lambda/GitHub Pages): HTTP polling cada 15s
+ * - En producción (Lambda/GitHub Pages): HTTP polling
+ *   - Evento activo:  cada 15s
+ *   - Evento pausado: cada 60s (ahorra llamadas Lambda)
  */
 class WSClient {
   constructor() {
@@ -9,7 +11,8 @@ class WSClient {
     this.handlers = {
       'prizes:initial': [],
       'prizes:updated': [],
-      'stock:updated': []
+      'stock:updated':  [],
+      'event:status':   []
     };
     this.reconnectDelay = 1000;
     this.maxReconnectDelay = 30000;
@@ -17,6 +20,7 @@ class WSClient {
     this.shouldReconnect = true;
     this.pollingInterval = null;
     this.pollingMode = false;
+    this.pollRateMs = 15000;
   }
 
   connect() {
@@ -58,7 +62,6 @@ class WSClient {
       };
 
       this.ws.onerror = () => {
-        // Si WS falla en localhost, caer a polling como respaldo
         this.ws.close();
         if (!this.pollingInterval) this.startPolling();
       };
@@ -71,7 +74,15 @@ class WSClient {
     if (this.pollingInterval) return;
     this.pollingMode = true;
     this._pollPrizes();
-    this.pollingInterval = setInterval(() => this._pollPrizes(), 15000); // 15s en vez de 3s
+    this.pollingInterval = setInterval(() => this._pollPrizes(), this.pollRateMs);
+  }
+
+  // Adjusts poll interval without missing a beat (public — pages can call this)
+  setPollRate(ms) {
+    if (this.pollRateMs === ms || !this.pollingInterval) return;
+    this.pollRateMs = ms;
+    clearInterval(this.pollingInterval);
+    this.pollingInterval = setInterval(() => this._pollPrizes(), ms);
   }
 
   stopPolling() {
@@ -88,16 +99,25 @@ class WSClient {
       const response = await fetch(`${baseUrl}/api/prizes`);
       if (response.ok) {
         const data = await response.json();
-        this.handlers['stock:updated'].forEach(cb => cb(data));
+
+        // Support both legacy array format and new { prizes, event_active } format
+        const prizes = Array.isArray(data) ? data : (data.prizes || []);
+        const eventActive = Array.isArray(data) ? true : (data.event_active !== false);
+
+        this.handlers['stock:updated'].forEach(cb => cb(prizes));
+        this.handlers['event:status'].forEach(cb => cb({ event_active: eventActive }));
+
+              // Pages decide what to do via onEventStatus handlers
       }
     } catch (e) {
       console.error('Polling error:', e);
     }
   }
 
-  onPrizesInitial(callback)  { this.handlers['prizes:initial'].push(callback); }
-  onPrizesUpdated(callback)  { this.handlers['prizes:updated'].push(callback); }
-  onStockUpdated(callback)   { this.handlers['stock:updated'].push(callback); }
+  onPrizesInitial(callback) { this.handlers['prizes:initial'].push(callback); }
+  onPrizesUpdated(callback) { this.handlers['prizes:updated'].push(callback); }
+  onStockUpdated(callback)  { this.handlers['stock:updated'].push(callback); }
+  onEventStatus(callback)   { this.handlers['event:status'].push(callback); }
 
   disconnect() {
     this.shouldReconnect = false;

@@ -40,7 +40,8 @@ class Database {
       config: {
         meetup_url: process.env.MEETUP_URL || 'https://www.meetup.com/your-meetup-group',
         consolation_message: '¡Mejor suerte la próxima vez! Síguenos en Meetup para más oportunidades.',
-        web_app_url: process.env.WEB_APP_URL || 'http://localhost:3000'
+        web_app_url: process.env.WEB_APP_URL || 'http://localhost:3000',
+        event_active: true
       }
     };
   }

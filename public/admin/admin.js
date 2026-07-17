@@ -22,6 +22,7 @@ const prizesTbody = document.getElementById('prizes-tbody');
 const prizeCount = document.getElementById('prize-count');
 const logoutBtn = document.getElementById('logout-btn');
 const wsStatus = document.getElementById('ws-status');
+const eventToggleBtn = document.getElementById('event-toggle-btn');
 
 /**
  * API helper with auth
@@ -87,11 +88,41 @@ async function showDashboard() {
 }
 
 /**
+ * Update event toggle button visual state
+ */
+function updateEventToggleBtn(isActive) {
+  eventToggleBtn.dataset.active = isActive ? 'true' : 'false';
+  if (isActive) {
+    eventToggleBtn.textContent = '⏸ Pausar';
+    eventToggleBtn.className = 'btn btn-event-active';
+  } else {
+    eventToggleBtn.textContent = '▶ Activar';
+    eventToggleBtn.className = 'btn btn-event-paused';
+  }
+}
+
+/**
+ * Toggle event active/paused
+ */
+async function toggleEventStatus() {
+  const isActive = eventToggleBtn.dataset.active !== 'false';
+  try {
+    const result = await apiRequest('/api/event/status', 'POST', { event_active: !isActive });
+    updateEventToggleBtn(result.event_active);
+  } catch (e) {
+    alert('Error al cambiar estado: ' + e.message);
+  }
+}
+
+/**
  * Load prizes from API
  */
 async function loadPrizes() {
   try {
-    prizes = await apiRequest('/api/prizes');
+    const data = await apiRequest('/api/prizes');
+    prizes = Array.isArray(data) ? data : (data.prizes || []);
+    const isActive = Array.isArray(data) ? true : (data.event_active !== false);
+    updateEventToggleBtn(isActive);
     renderTable();
   } catch (e) {
     console.error('Failed to load prizes:', e);
@@ -264,6 +295,7 @@ prizeForm.addEventListener('submit', (e) => {
 
 formCancelBtn.addEventListener('click', resetForm);
 logoutBtn.addEventListener('click', logout);
+eventToggleBtn.addEventListener('click', toggleEventStatus);
 
 // Check if already authenticated
 (async function init() {

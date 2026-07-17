@@ -185,6 +185,13 @@ class WebSocketManager {
     }
   }
 
+  broadcastEventStatus(eventActive) {
+    const data = { event: 'event:status', data: { event_active: eventActive } };
+    for (const client of this.clients) {
+      this._sendToClient(client, data);
+    }
+  }
+
   sendInitialState(client) {
     this._sendToClient(client, {
       event: 'prizes:initial',

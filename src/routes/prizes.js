@@ -54,10 +54,39 @@ async function loginRoute(req, res) {
 
 /**
  * Route: GET /api/prizes
+ * Returns prizes array + event_active flag so clients adjust behavior in one call.
  */
 function getPrizesRoute(req, res) {
+  const { getDatabase } = require('../db/database');
+  const db = getDatabase();
   const prizes = prizeService.getAllPrizes();
-  sendJSON(res, 200, prizes);
+  const config = db.getConfig();
+  sendJSON(res, 200, {
+    prizes,
+    event_active: config.event_active !== false // default true if not set
+  });
+}
+
+/**
+ * Route: POST /api/event/status (auth required)
+ * Body: { event_active: bool }
+ */
+async function updateEventStatusRoute(req, res) {
+  if (!authenticate(req.headers.authorization)) {
+    return sendJSON(res, 401, { error: 'Authentication required' });
+  }
+  try {
+    const body = await parseBody(req);
+    const { getDatabase } = require('../db/database');
+    const db = getDatabase();
+    const eventActive = !!body.event_active;
+    db.updateConfig('event_active', eventActive);
+    const wsManager = getWSManager();
+    wsManager.broadcastEventStatus(eventActive);
+    sendJSON(res, 200, { event_active: eventActive });
+  } catch (e) {
+    sendJSON(res, 400, { error: e.message });
+  }
 }
 
 /**
@@ -171,5 +200,6 @@ module.exports = {
   updatePrizeRoute,
   deletePrizeRoute,
   spinRoute,
-  getConfigRoute
+  getConfigRoute,
+  updateEventStatusRoute
 };

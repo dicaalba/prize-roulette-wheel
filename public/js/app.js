@@ -16,6 +16,7 @@ let state = AppState.CONNECTING;
 let prizes = [];
 let segments = [];
 let config = {};
+let eventActive = true;
 let wheelRenderer = null;
 let spinEngine = null;
 let animationController = null;
@@ -70,9 +71,9 @@ function setState(newState) {
       if (statusEl) statusEl.textContent = 'Conectando al servidor...';
       break;
     case AppState.IDLE:
-      spinBtn.disabled = false;
+      spinBtn.disabled = !eventActive;
       spinBtn.textContent = 'Girar';
-      if (statusEl) statusEl.textContent = '';
+      if (statusEl) statusEl.textContent = eventActive ? '' : 'El evento está pausado';
       break;
     case AppState.SPINNING:
       spinBtn.disabled = true;
@@ -94,7 +95,7 @@ function setState(newState) {
  * Handle spin button click
  */
 async function handleSpin() {
-  if (state !== AppState.IDLE) return;
+  if (state !== AppState.IDLE || !eventActive) return;
 
   setState(AppState.SPINNING);
 
@@ -158,7 +159,9 @@ async function init() {
   // Load initial prizes
   try {
     const prizesRes = await fetch(`${CONFIG.API_BASE_URL}/api/prizes`);
-    prizes = await prizesRes.json();
+    const prizesData = await prizesRes.json();
+    prizes = Array.isArray(prizesData) ? prizesData : (prizesData.prizes || []);
+    eventActive = Array.isArray(prizesData) ? true : (prizesData.event_active !== false);
     updateWheel();
     setState(AppState.IDLE);
   } catch (e) {
@@ -188,6 +191,16 @@ async function init() {
     if (state !== AppState.SPINNING && state !== AppState.AWAIT_RESULT) {
       updateWheel();
     }
+  });
+
+  wsClient.onEventStatus((data) => {
+    eventActive = data.event_active;
+    if (!eventActive) {
+      // True pause: stop ALL polling — zero Lambda calls until participant refreshes page.
+      // Participants scan the QR when the event starts, so they always land on the active version.
+      wsClient.stopPolling();
+    }
+    if (state === AppState.IDLE) setState(AppState.IDLE);
   });
 
   wsClient.connect();
